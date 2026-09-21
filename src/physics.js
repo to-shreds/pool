@@ -1,0 +1,306 @@
+/* Cue Lab physics. SI units; x along the table, y toward the top rail, z up.
+ * Original implementation. See docs/PHYSICS.md for assumptions and references.
+ * Fixed outer steps + swept ball/cushion collisions + split cloth/gravity.
+ */
+(function(root){
+'use strict';
+const R=0.028575, M=0.17, I=0.4*M*R*R, L=2.54, W=1.27, G=9.81, DT=1/480;
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const add=(a,b)=>a.map((x,i)=>x+b[i]);
+const sub=(a,b)=>a.map((x,i)=>x-b[i]);
+const mul=(a,k)=>a.map(x=>x*k);
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const norm=a=>Math.hypot(...a);
+const unit=a=>mul(a,1/(norm(a)||1));
+const clone=x=>JSON.parse(JSON.stringify(x));
+const defaults={slide:0.20,roll:0.011,spin:8.0,ballRestitution:0.95,ballFriction:0.045,
+  railRestitution:0.78,railFriction:0.18,slateRestitution:0.32,cueMass:0.54,
+  cueRestitution:0.75,tipFriction:0.70,deflection:1.6};
+const pockets=[{x:-.027,y:W+.027,label:'A',name:'Upper left'},
+ {x:L/2,y:W+.046,label:'B',name:'Upper side'},
+ {x:L+.027,y:W+.027,label:'C',name:'Upper right'},
+ {x:L+.027,y:-.027,label:'D',name:'Lower right'},
+ {x:L/2,y:-.046,label:'E',name:'Lower side'},
+ {x:-.027,y:-.027,label:'F',name:'Lower left'}];
+function makeRails(){
+ const s=.074,c=.092,t=.047,rails=[];
+ const seg=(a,b,kind='cushion')=>rails.push({a,b,kind,id:rails.length});
+ // Main rails and their flat pocket facings. The end caps are also collidable.
+ for(const y of [0,W]){
+  const out=y===0?-1:1;
+  seg([c,y],[L/2-s,y]); seg([L/2+s,y],[L-c,y]);
+  seg([L/2-s,y],[L/2-t,y+out*.053],'jaw');
+  seg([L/2+s,y],[L/2+t,y+out*.053],'jaw');
+  seg([c,y],[.036,y+out*.039],'jaw');
+  seg([L-c,y],[L-.036,y+out*.039],'jaw');
+ }
+ for(const x of [0,L]){
+  const out=x===0?-1:1;
+  seg([x,c],[x,W-c]);
+  seg([x,c],[x+out*.039,.036],'jaw');
+  seg([x,W-c],[x+out*.039,W-.036],'jaw');
+ }
+ return rails;
+}
+const rails=makeRails();
+function ball(id,x,y){return {id,p:[x,y,R],v:[0,0,0],w:[0,0,0],q:[1,0,0,0],active:true,pocket:null};}
+function stop(b){b.v=[0,0,0];b.w=[0,0,0];b.p[2]=R;}
+function apply(b,J,r){for(let k=0;k<3;k++)b.v[k]+=J[k]/M;
+ const t=cross(r,J);for(let k=0;k<3;k++)b.w[k]+=t[k]/I;}
+function energy(b){return .5*M*dot(b.v,b.v)+.5*I*dot(b.w,b.w)+M*G*Math.max(0,b.p[2]-R);}
+function moving(b){return b.active&&(norm(b.v)>.0002||Math.hypot(b.w[0],b.w[1])*R>.0002||Math.abs(b.w[2])>.025||b.p[2]>R+.00001);}
+function slip(b){return [b.v[0]-R*b.w[1],b.v[1]+R*b.w[0],0];}
+function stateName(b){if(!b.active)return 'Pocketed';if(b.p[2]>R+.0001||Math.abs(b.v[2])>.03)return 'Airborne';
+ if(norm(slip(b))>.01)return 'Sliding';if(Math.hypot(b.v[0],b.v[1])>.003)return 'Rolling';
+ return Math.abs(b.w[2])>.025?'Spinning':'At rest';}
+// Apply friction only at actual cloth contact. Stop at the exact slide-to-roll transition.
+function cloth(b,h,cfg){
+ if(!b.active||b.p[2]>R+.000005||b.v[2]>.0001)return;
+ let rem=h;const u=slip(b),s=norm(u);
+ if(s>1e-9&&cfg.slide>0){
+  const t=Math.min(rem,s/(3.5*cfg.slide*G));
+  const ax=-cfg.slide*G*u[0]/s,ay=-cfg.slide*G*u[1]/s;
+  b.v[0]+=ax*t;b.v[1]+=ay*t;b.w[0]+=2.5*ay*t/R;b.w[1]-=2.5*ax*t/R;
+  rem-=t;
+  if(t>=s/(3.5*cfg.slide*G)-1e-12){b.w[0]=-b.v[1]/R;b.w[1]=b.v[0]/R;}
+ }else if(s>1e-9)rem=0;
+ if(rem>0){const speed=Math.hypot(b.v[0],b.v[1]);
+  const scale=speed>0?Math.max(0,1-cfg.roll*G*rem/speed):0;
+  b.v[0]*=scale;b.v[1]*=scale;b.w[0]=-b.v[1]/R;b.w[1]=b.v[0]/R;
+ }
+ b.w[2]=Math.sign(b.w[2])*Math.max(0,Math.abs(b.w[2])-cfg.spin*h);
+}
+function floorImpact(b,cfg){
+ b.p[2]=R;
+ if(b.v[2]>=0)return;
+ const e=Math.abs(b.v[2])<.20?0:cfg.slateRestitution;
+ const jn=-(1+e)*M*b.v[2],u=slip(b),s=norm(u);
+ const jt=s?Math.min(M*s/3.5,cfg.slide*jn):0;
+ apply(b,[-jt*u[0]/(s||1),-jt*u[1]/(s||1),jn],[0,0,-R]);
+ if(b.v[2]<.03)b.v[2]=0;
+}
+function orientation(b,t){
+ const s=norm(b.w),a=s*t/2;if(s<1e-9)return;
+ const d=[Math.cos(a),...mul(b.w,Math.sin(a)/s)],q=b.q;
+ b.q=[d[0]*q[0]-d[1]*q[1]-d[2]*q[2]-d[3]*q[3],
+ d[0]*q[1]+d[1]*q[0]+d[2]*q[3]-d[3]*q[2],
+ d[0]*q[2]-d[1]*q[3]+d[2]*q[0]+d[3]*q[1],
+ d[0]*q[3]+d[1]*q[2]-d[2]*q[1]+d[3]*q[0]];
+ const z=Math.hypot(...b.q);b.q=b.q.map(x=>x/z);
+}
+function contact(a,b,cfg){
+ let d=sub(b.p,a.p),dist=norm(d),n=dist>1e-10?mul(d,1/dist):[1,0,0];
+ const vn=dot(sub(b.v,a.v),n);
+ if(dist<2*R){const fix=(2*R-dist+1e-8)/2;for(let i=0;i<3;i++){a.p[i]-=n[i]*fix;b.p[i]+=n[i]*fix;}}
+ if(vn>=-1e-7)return 0;
+ const jn=-(1+cfg.ballRestitution)*vn*M/2,r=mul(n,R);
+ const rel=sub(sub(b.v,a.v),cross(add(a.w,b.w),r));
+ const ut=sub(rel,mul(n,dot(rel,n))),speed=norm(ut);
+ const jt=speed?mul(ut,-Math.min(speed*M/7,cfg.ballFriction*jn)/speed):[0,0,0];
+ const J=add(mul(n,jn),jt);apply(a,mul(J,-1),r);apply(b,J,mul(r,-1));
+ return jn;
+}
+// Resolve co-timed ball contacts together. A serial pairwise bounce biases a
+// symmetric rack because whichever neighbor is processed first gets more energy.
+function simultaneousContacts(balls,cfg){
+ const cons=[];
+ for(let i=0;i<balls.length;i++)for(let j=i+1;j<balls.length;j++){
+  const a=balls[i],b=balls[j],d=sub(b.p,a.p),len=norm(d);
+  if(len>2*R+2e-7||len<1e-12)continue;
+  const n=mul(d,1/len),vn=dot(sub(b.v,a.v),n);
+  if(vn>1e-6)continue;
+  cons.push({a,b,n,target:-cfg.ballRestitution*Math.min(vn,0),J:0});
+ }
+ for(let iter=0;iter<24;iter++)for(const c of cons){
+  const vn=dot(sub(c.b.v,c.a.v),c.n),next=Math.max(0,c.J+(c.target-vn)*M/2),dj=next-c.J;
+  c.J=next;for(let k=0;k<3;k++){c.a.v[k]-=dj*c.n[k]/M;c.b.v[k]+=dj*c.n[k]/M;}
+ }
+ for(const c of cons){
+  if(c.J<1e-9)continue;
+  const r=mul(c.n,R),rel=sub(sub(c.b.v,c.a.v),cross(add(c.a.w,c.b.w),r));
+  const u=sub(rel,mul(c.n,dot(rel,c.n))),us=norm(u);
+  if(us>1e-10){const jt=mul(u,-Math.min(M*us/7,cfg.ballFriction*c.J)/us);apply(c.a,mul(jt,-1),r);apply(c.b,jt,mul(r,-1));}
+  const len=norm(sub(c.b.p,c.a.p));if(len<2*R){const f=(2*R-len+1e-8)/2;for(let k=0;k<3;k++){c.a.p[k]-=c.n[k]*f;c.b.p[k]+=c.n[k]*f;}}
+ }
+ return cons.filter(c=>c.J>1e-9);
+}
+function circleTOI(px,py,vx,vy,r,limit){
+ const a=vx*vx+vy*vy,b=px*vx+py*vy,c=px*px+py*py-r*r;
+ if(a<1e-14||b>=0)return null;
+ if(c<1e-10)return 0;
+ const disc=b*b-a*c;if(disc<0)return null;
+ const t=(-b-Math.sqrt(disc))/a;return t>=-1e-9&&t<=limit?Math.max(0,t):null;
+}
+function pairTOI(a,b,limit){
+ const p=sub(b.p,a.p),v=sub(b.v,a.v),aa=dot(v,v),bb=dot(p,v),cc=dot(p,p)-4*R*R;
+ if(aa<1e-14||bb>=-1e-10)return null;
+ if(cc<1e-10)return 0;
+ const d=bb*bb-aa*cc;if(d<0)return null;
+ const t=(-bb-Math.sqrt(d))/aa;return t>=-1e-9&&t<=limit?Math.max(0,t):null;
+}
+function railRadius(b){const dz=b.p[2]-1.28*R;
+ return Math.abs(dz)<R?Math.sqrt(R*R-dz*dz):0;}
+function closest(b,s){
+ const dx=s.b[0]-s.a[0],dy=s.b[1]-s.a[1],l2=dx*dx+dy*dy;
+ const f=clamp(((b.p[0]-s.a[0])*dx+(b.p[1]-s.a[1])*dy)/l2,0,1);
+ return [s.a[0]+f*dx,s.a[1]+f*dy];
+}
+function railTOI(b,s,limit){
+ const r=railRadius(b);if(!r)return null;
+ const px=b.p[0],py=b.p[1],vx=b.v[0],vy=b.v[1];
+ const dx=s.b[0]-s.a[0],dy=s.b[1]-s.a[1],len=Math.hypot(dx,dy),tx=dx/len,ty=dy/len;
+ const along=(px-s.a[0])*tx+(py-s.a[1])*ty;
+ const dist=-(px-s.a[0])*ty+(py-s.a[1])*tx,vn=-vx*ty+vy*tx,va=vx*tx+vy*ty;
+ let best=null;
+ if(Math.abs(vn)>1e-10){
+  for(const side of [-1,1]){
+   if(vn*side>=0)continue;
+   const t=(side*r-dist)/vn;
+   const q=along+va*Math.max(0,t);
+   if(t>=-1e-8&&t<=limit&&q>=0&&q<=len)best=Math.max(0,t);
+   if(Math.abs(dist)<r+1e-7&&dist*side>=0&&along>=0&&along<=len)best=0;
+  }
+ }
+ for(const p of [s.a,s.b]){const t=circleTOI(px-p[0],py-p[1],vx,vy,r,limit);if(t!==null&&(best===null||t<best))best=t;}
+ return best;
+}
+function cushion(b,s,cfg){
+ const q=closest(b,s),d=[b.p[0]-q[0],b.p[1]-q[1],b.p[2]-1.28*R];
+ const n=unit(d),vn=dot(b.v,n);if(vn>=-1e-7)return 0;
+ const r=mul(n,-R),u=add(b.v,cross(b.w,r));
+ const ut=sub(u,mul(n,dot(u,n))),speed=norm(ut);
+ const e=clamp(cfg.railRestitution-.014*Math.max(0,Math.abs(vn)-2),.55,.9);
+ const jn=-(1+e)*M*vn;
+ const jt=speed?mul(ut,-Math.min(M*speed/3.5,cfg.railFriction*jn)/speed):[0,0,0];
+ apply(b,add(mul(n,jn),jt),r);
+ // Correct penetration horizontally; do not lift a resting ball onto a nose.
+ const hr=railRadius(b),dd=Math.hypot(d[0],d[1]);
+ if(dd<hr+1e-8&&dd>1e-10){b.p[0]+=d[0]/dd*(hr-dd+2e-8);b.p[1]+=d[1]/dd*(hr-dd+2e-8);}
+ return jn;
+}
+function strikeInfo(angle,side,up,elev,power,cfg=defaults){
+ let rho=Math.hypot(side,up);if(rho>.97){side*=.97/rho;up*=.97/rho;rho=.97;}
+ const th=clamp(elev,0,80)*Math.PI/180,co=Math.cos(angle),si=Math.sin(angle);
+ const d=[co*Math.cos(th),si*Math.cos(th),-Math.sin(th)];
+ const right=[si,-co,0],vertical=[co*Math.sin(th),si*Math.sin(th),Math.cos(th)];
+ const r=mul(add(add(mul(right,side),mul(vertical,up)),mul(d,-Math.sqrt(1-rho*rho))),R);
+ const shaftSpeed=.10+5.4*Math.pow(clamp(power,1,100)/100,1.45);
+ const miscue=rho/Math.sqrt(1-rho*rho)>cfg.tipFriction;
+ let direction=d;
+ if(miscue){
+  // Slip the tip at the friction cone, instead of granting impossible edge spin.
+  const n=mul(r,-1/R),dn=dot(d,n),t=sub(d,mul(n,dn));
+  direction=unit(add(n,mul(unit(t),cfg.tipFriction)));
+ }
+ // Empirical low-deflection shaft angle; separate from rigid-body impulse model.
+ const squirt=-cfg.deflection*Math.PI/180*side;
+ if(Math.abs(squirt)>0){const cs=Math.cos(squirt),ss=Math.sin(squirt);
+  direction=[direction[0]*cs-direction[1]*ss,direction[0]*ss+direction[1]*cs,direction[2]];}
+ const rx=cross(r,direction),eff=1/M+1/cfg.cueMass+dot(rx,rx)/I;
+ const J=(1+cfg.cueRestitution)*shaftSpeed/eff*(miscue?.68:1);
+ return {r,d:direction,J,miscue,rho,side,up,shaftSpeed,contactHeight:R+r[2],speed:J/M};
+}
+class World{
+ constructor(balls=[],cfg={}){this.balls=clone(balls);this.cfg={...defaults,...cfg};this.events=[];this.time=0;this.diagnostics={eventLimit:0};}
+ snapshot(){return {balls:clone(this.balls),cfg:{...this.cfg},time:this.time};}
+ static from(s){const w=new World(s.balls,s.cfg);w.time=s.time||0;return w;}
+ get(id){return this.balls.find(b=>b.id===id);}
+ atRest(){return !this.balls.some(moving);}
+ strike(angle,side,up,elev,power){
+  const b=this.get(0);if(!b||!b.active||!this.atRest())return {ok:false,reason:'Wait for the balls to stop.'};
+  const info=strikeInfo(angle,side,up,elev,power,this.cfg);
+  if(info.contactHeight<.006)return {ok:false,reason:'The tip would hit the cloth. Raise the contact point.'};
+  this.events=[];this.time=0;this.diagnostics={eventLimit:0};
+  apply(b,mul(info.d,info.J),info.r);
+  if(b.v[2]<0)floorImpact(b,this.cfg);
+  this.emit('strike',{miscue:info.miscue});return {ok:true,...info};
+ }
+ emit(type,data){this.events.push({type,t:this.time,...data});}
+ advance(t){
+  for(const b of this.balls)if(b.active){for(let k=0;k<3;k++)b.p[k]+=b.v[k]*t;orientation(b,t);}
+  this.time+=t;
+ }
+ capture(){
+  for(const b of this.balls)if(b.active){
+   let p=-1;
+   if(b.p[2]<R+.012)for(let i=0;i<pockets.length;i++){
+    const k=pockets[i];if(Math.hypot(b.p[0]-k.x,b.p[1]-k.y)<.052){p=i;break;}}
+   const off=b.p[0]<-.13||b.p[0]>L+.13||b.p[1]<-.13||b.p[1]>W+.13;
+   if(p>=0||off){b.active=false;b.pocket=p>=0?p:-1;this.emit(p>=0?'pocket':'off',{id:b.id,pocket:b.pocket,p:[...b.p]});stop(b);}
+  }
+ }
+ step(dt=DT){
+  if(!(dt>0&&dt<=.05))throw new RangeError('Physics step must be between 0 and 0.05 seconds.');
+  // Splitting at <= DT keeps friction/impact coupling stable across display rates.
+  const steps=Math.ceil(dt/DT),h=dt/steps;
+  for(let k=0;k<steps;k++)this.tick(h);
+ }
+ tick(h){
+  for(const b of this.balls)if(b.active){
+   if(b.p[2]<=R+1e-6&&b.v[2]<0)floorImpact(b,this.cfg);
+   cloth(b,h/2,this.cfg);
+   if(b.p[2]>R+1e-6||b.v[2]>0)b.v[2]-=G*h/2;
+  }
+  let rem=h,iterations=0;
+  while(rem>1e-10&&iterations++<64){
+   let t=rem,hit=null;const bs=this.balls.filter(b=>b.active);
+   for(let i=0;i<bs.length;i++){
+    const b=bs[i];
+    if(b.v[2]<-1e-8){const f=(R-b.p[2])/b.v[2];if(f>=-1e-8&&f<=t){t=Math.max(0,f);hit={type:'floor',b};}}
+    for(let j=i+1;j<bs.length;j++){
+     const z=pairTOI(b,bs[j],t);if(z!==null&&z<=t){t=z;hit={type:'ball',a:b,b:bs[j]};}}
+    if(norm(b.v)>.0001)for(const s of rails){const z=railTOI(b,s,t);if(z!==null&&z<=t){t=z;hit={type:'rail',b,s};}}
+   }
+   if(t>0){this.advance(t);rem-=t;this.capture();}
+   if(!hit)break;
+   if(hit.type==='floor'){if(hit.b.active)floorImpact(hit.b,this.cfg);}
+   else if(hit.type==='ball'){
+    if(hit.a.active&&hit.b.active){for(const c of simultaneousContacts(this.balls.filter(b=>b.active),this.cfg))this.emit('ball',{a:c.a.id,b:c.b.id,impulse:c.J});}
+   }else if(hit.b.active){const j=cushion(hit.b,hit.s,this.cfg);if(j)this.emit('rail',{id:hit.b.id,rail:hit.s.id,kind:hit.s.kind,impulse:j});}
+   if(t<1e-10){const eps=Math.min(rem,1e-8);this.advance(eps);rem-=eps;}
+  }
+  if(rem>1e-10){this.diagnostics.eventLimit++;this.advance(rem);}
+  for(const b of this.balls)if(b.active){
+   if(b.p[2]>R+1e-6||b.v[2]>0)b.v[2]-=G*h/2;
+   if(b.p[2]<R||b.p[2]<=R+1e-6&&b.v[2]<0)floorImpact(b,this.cfg);
+   cloth(b,h/2,this.cfg);
+   if(norm(b.v)<.0001&&Math.hypot(b.w[0],b.w[1])*R<.0001){b.v=[0,0,0];b.w[0]=b.w[1]=0;}
+  }
+  this.capture();
+ }
+ simulate(maxSeconds=45){let n=0;while(!this.atRest()&&n<maxSeconds/DT){this.step();n++;}return {steps:n,settled:this.atRest(),seconds:n*DT,events:this.events};}
+}
+function rackPositions(count=15){
+ const out=[];const sep=2*R+1e-8;
+ if(count===9){for(let row=0;row<5;row++){const n=3-Math.abs(2-row);for(let col=0;col<n;col++)out.push([L*.75+row*sep*Math.sqrt(3)/2,W/2+(col-(n-1)/2)*sep]);}}
+ else {let i=0;for(let row=0;i<count;row++)for(let col=0;col<=row&&i<count;col++,i++)out.push([L*.75+row*sep*Math.sqrt(3)/2,W/2+(col-row/2)*sep]);}
+ return out;
+}
+function rack(mode='8ball'){
+ const count=mode==='9ball'||mode==='banks'?9:mode==='10ball'?10:mode==='3ball'?3:15;
+ let ids=Array.from({length:count},(_,i)=>i+1);
+ // Stable well-spread rack; a legal group in each back corner in 8-ball.
+ if(mode==='8ball')ids=[1,10,2,11,8,3,4,12,5,13,6,14,7,15,9];
+ if(mode==='9ball')ids=[1,2,3,4,9,5,6,7,8];
+ if(mode==='10ball')ids=[1,2,3,4,10,5,6,7,8,9];
+ return [ball(0,L*.25,W/2),...rackPositions(count).map((p,i)=>ball(ids[i],...p))];
+}
+function validPosition(world,id,x,y,kitchen=false){
+ if(x<R||x>L-R||y<R||y>W-R||kitchen&&x>L/4)return false;
+ return !world.balls.some(b=>b.active&&b.id!==id&&Math.hypot(b.p[0]-x,b.p[1]-y)<2*R+.00005);
+}
+function place(world,id,x,y,kitchen=false){
+ if(!validPosition(world,id,x,y,kitchen))return false;
+ let b=world.get(id);if(!b){b=ball(id,x,y);world.balls.push(b);}b.p=[x,y,R];b.active=true;b.pocket=null;stop(b);return true;
+}
+function spot(world,id,x=L*.75,y=W/2){
+ for(let pass=0;pass<3;pass++)for(let k=0;k<300;k++){
+  const xx=pass===0?x+k*.003:pass===1?x-k*.003:R+(k%70)*.035;
+  const yy=pass<2?y:R+Math.floor(k/70)*.07;
+  if(place(world,id,xx,yy))return true;
+ }return false;
+}
+const api={R,M,I,L,W,G,DT,defaults,pockets,rails,ball,rack,rackPositions,World,clamp,clone,add,sub,mul,dot,cross,norm,unit,energy,moving,slip,stateName,cloth,contact,simultaneousContacts,floorImpact,strikeInfo,place,spot,validPosition};
+if(typeof module!=='undefined'&&module.exports)module.exports=api;root.CuePhysics=api;
+})(typeof globalThis!=='undefined'?globalThis:this);
