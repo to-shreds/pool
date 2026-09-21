@@ -174,6 +174,54 @@ Add visual table presets and independent felt selection. Table appearance should
 
 Keep Advanced Table Physics separate for future calibrated pocket/cloth/cushion presets.
 
+
+## Coaching timeout system
+
+Add an optional APA-style coaching timeout system for 8-ball. Current APA Open Division rules allow two time-outs per game for SL1-3 and unrated players and one for SL4+. Cue Lab's SL2-SL7 scale should therefore default to two timeouts for SL2-SL3 and one timeout for SL4-SL7, while keeping counts configurable outside the APA-style preset.
+
+A timeout should be a coaching feature, not simply a free made shot. Provide two selectable timeout-assist levels:
+
+### Coach timeout
+
+Use the same shot-search/evaluation engine planned for the computer opponent. Analyze the live position and identify the strongest practical options. The coach should explain:
+
+- recommended object ball and pocket or safety objective;
+- approximate aim/contact point;
+- intended cue-ball route and landing zone;
+- recommended power, tip position and cue elevation;
+- why the shot is preferred, including position for the next ball, scratch risk, clusters, opponent layout and safety value;
+- one or two reasonable alternatives when the decision is genuinely close;
+- a confidence/probability band, labeled as the simulator's estimate rather than certainty.
+
+The user can request a visual demonstration. The demo should run a ghost copy of the current state with the recommended stroke and camera angle, then return to the untouched live table. It must never consume the actual turn, reroll the game state, or alter the player's saved shot controls unless the user explicitly presses Apply suggestion.
+
+Do not present one shot as objectively "the right shot" when several options are close. Say "Recommended" or "Best evaluated option" and expose alternatives when useful.
+
+### Aim-assist timeout
+
+A simpler classic option can provide an extended aim line, ghost-ball contact location, object-ball route, suggested power and optional cue-ball target zone. This should still leave execution to the player. It is appropriate for Arcade mode or for users who want a less computationally intensive timeout.
+
+### Shot-search implementation
+
+The computer-AI and timeout coach should share one candidate generator/evaluator. Candidate families can include direct pots, combinations, caroms where supported, banks, kicks, breakouts, defensive safeties and two-way shots. For each family, search a bounded grid/optimizer over aim, tip contact, power and elevation and run the actual Cue Lab physics in a Web Worker or equivalent off-main-thread worker. Score resulting positions by expected pocket success, cue-ball control, next-shot quality, scratch/foul risk, cluster value, defensive value and game-specific strategic state.
+
+For strong coaching, evaluate execution robustness by perturbing the selected stroke using the configured player's skill distribution rather than judging only a perfect stroke. A shot that works only with exact execution should be downgraded for an SL2-SL4 player relative to a slightly less ambitious shot with a wider success window. In Arcade mode, exact-execution analysis can be used instead.
+
+The analysis budget must be bounded so the browser remains responsive. Progressive results are acceptable: quickly show a competent preliminary recommendation, then refine if deeper search completes. Never freeze shot controls while the coach searches unless the user is actively viewing the timeout screen.
+
+### Timeout settings
+
+- Timeouts: APA-style / Custom / Off
+- APA-style counts: SL2-SL3 = 2 per game; SL4-SL7 = 1 per game
+- Timeout type: Coach / Aim assist / Ask each time
+- Demonstration: Automatic / Tap to preview / Off
+- Explanation depth: Brief / Detailed
+- Show alternatives: On / Off
+- Use player skill when evaluating robustness: On / Off
+- Apply suggested stroke: On / Off
+
+Timeout usage is per game within a match, not per entire match, when using APA-style rules.
+
 ## Additional 0.3 gameplay items
 
 - Match setup: game, Human/Computer, opponent skill, player skill, race length, camera, table, felt, assists and break format.
@@ -202,11 +250,12 @@ Keep Advanced Table Physics separate for future calibrated pocket/cloth/cushion 
 4. Chalk state and physical friction-envelope integration.
 5. Cue-ball size/mass presets and physics regression suite.
 6. 3D renderer and camera settings while preserving 2D.
-7. AI candidate generator/evaluator.
-8. SL2-SL7 opponent profiles using the shared execution model.
-9. Table/felt appearance presets.
-10. Match setup, stats, replays and polish.
-11. Broad regression plus real-device testing and physics calibration.
+7. AI candidate generator/evaluator shared by computer opponents and timeout coaching.
+8. Coaching timeout analysis, visual demo and APA-style timeout counts.
+9. SL2-SL7 opponent profiles using the shared execution model.
+10. Table/felt appearance presets.
+11. Match setup, stats, replays and polish.
+12. Broad regression plus real-device testing and physics calibration.
 
 ## Acceptance rules
 
