@@ -1,0 +1,19 @@
+{
+  "run_id": 35657497110,
+  "job_id": 106524648842,
+  "commit": "9b1d86341188a4007baa6c9ba028922df404b6e3",
+  "conclusion": "success",
+  "unit_tests": {
+    "passed": 114,
+    "failed": 0,
+    "skipped": 0
+  },
+  "offline_html": {
+    "bytes": 125437,
+    "sha256": "d8f36edac2c5128a876165d436368399559c0575e046911f67ec20cc70b79ca9"
+  },
+  "artifact_id": 10665027526,
+  "browser_tests_in_ci": false,
+  "pages_deployment": false,
+  "source": "https://github.com/to-shreds/pool/actions/runs/35657497110"
+}
