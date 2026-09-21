@@ -1,0 +1,30 @@
+name: Verify game
+on:
+  push:
+    branches: [main]
+    paths: ['index.html', 'src/**', 'tests/**', 'build.py', '.github/workflows/verify.yml']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Physics, rules and placement regressions
+        run: node --test tests/*.test.js
+      - name: Build standalone offline HTML
+        run: python3 build.py
+      - name: Record artifact checksum
+        run: sha256sum Cue-Lab.html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cue-Lab-offline
+          path: Cue-Lab.html
+          if-no-files-found: error
