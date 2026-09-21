@@ -20,6 +20,8 @@ The human and computer players should share one stochastic execution model. Dist
 
 Cue-ball diameter and mass must be separate internally. Standard, oversize bar-box and heavy/magnetic presets are planned. A larger/heavier cue ball should not be described as simply unable to take spin; model the actual effects on inertia, draw/follow response, ball-to-ball contact geometry, hop tendency and collision behavior.
 
+0.3 also requires a top-level **Simulation / Arcade / Custom** realism preset. Arcade is the Candystand-style mode: exact human stroke delivery, no stochastic human mishit/miscue layer, no chalk-management penalty, and standard matched cue-ball physics by default, while preserving normal rules, deterministic table physics, spin controls, cameras, themes, replay, undo, and selected computer difficulty. Optional classic aim assists may be enabled separately. Custom allows mixing the realism subsystems.
+
 ## Verification
 
 114 unit tests, 112 original browser checks, 199 precision/layout checks and six modular-entry checks passed with no page-script errors. Eight viewport sizes include portrait/landscape phones, tablet and desktop, down to 320x568 and 740x360. Published runtime file hashes matched the tested local source. Details and limits are in verification/REPORT.md; reproducible unit/browser scripts are in the repo. The source ZIP also contains detailed raw results and screenshots.
