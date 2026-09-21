@@ -1,0 +1,136 @@
+from playwright.sync_api import sync_playwright
+from pathlib import Path
+import json
+root=Path(__file__).resolve().parents[1]
+html=(root/'Cue-Lab.html').read_text()
+report={'browser':'Chromium','method':'Real page DOM initialized with page.set_content; administrator policy blocks file:// and loopback navigation. In-memory localStorage shim used for persistence tests.','checks':[],'errors':[]}
+def check(name,value):
+ if not value: raise AssertionError(name)
+ report['checks'].append(name);print('PASS',name,flush=True)
+with sync_playwright() as p:
+ browser=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+ page=browser.new_page(viewport={'width':1440,'height':900},accept_downloads=True)
+ page.set_default_timeout(5000)
+ page.on('pageerror',lambda e:report['errors'].append(str(e)))
+ page.on('dialog',lambda d:d.accept())
+ page.evaluate("""() => { const data={}; Object.defineProperty(window,'localStorage',{value:{getItem:k=>data[k]??null,setItem:(k,v)=>data[k]=String(v),removeItem:k=>delete data[k],clear:()=>Object.keys(data).forEach(k=>delete data[k])},configurable:true}); }""")
+ page.set_content(html)
+ check('All nine modes populate',page.locator('#mode option').count()==9)
+ check('Initial save validates',page.evaluate('CueLab.validateSave(CueLab.snapshot())'))
+ # Real mouse hit, not a private test helper.
+ before=page.evaluate('CueLab.snapshot().shot.angle')
+ page.locator('#table').click(position={'x':610,'y':170})
+ check('Table click aims without firing',not page.evaluate('CueLab.status().shotRunning') and page.evaluate('CueLab.snapshot().shot.angle')!=before)
+ page.locator('.subtabs [data-page="spin"]').click()
+ tip=page.locator('#tip').bounding_box()
+ d=min(tip['width'],tip['height'])
+ page.mouse.click(tip['x']+tip['width']/2+d*.15,tip['y']+tip['height']/2+d*.14)
+ shot=page.evaluate('CueLab.snapshot().shot')
+ check('Tip diagram selects right draw',shot['side']>0 and shot['up']<0)
+ page.locator('#centerTip').click()
+ check('Center button resets tip',page.evaluate('CueLab.snapshot().shot.side===0&&CueLab.snapshot().shot.up===0'))
+ page.locator('.subtabs [data-page="angle"]').click()
+ page.locator('#elevation').evaluate("el=>{el.value=45;el.dispatchEvent(new Event('input',{bubbles:true}));}")
+ check('Elevation control updates model',page.evaluate('CueLab.snapshot().shot.elevation===45'))
+ # Exercise real menu and shot controls for every discipline.
+ for mode in ['8ball','9ball','straight','3ball','onepocket','10ball','banks','rotation','practice']:
+  page.select_option('#mode',mode)
+  page.locator('[data-tab="shot"]').click();page.locator('.subtabs [data-page="aim"]').click()
+  page.evaluate('CueLab.setShot({angle:0,side:0,up:0,elevation:0,power:95})')
+  if mode=='straight': page.check('#safety')
+  before=page.evaluate('CueLab.snapshot()')
+  page.locator('#shoot').click()
+  check(mode+' shot begins',page.evaluate('CueLab.status().shotRunning'))
+  page.locator('#finish').click()
+  state=page.evaluate('CueLab.snapshot()')
+  check(mode+' shot settles with finite state',page.evaluate('!CueLab.status().shotRunning && CueLab.getWorld().atRest() && CueLab.validateSave(CueLab.snapshot())'))
+  check(mode+' no collision limit',page.evaluate('CueLab.getWorld().diagnostics.eventLimit===0'))
+  check(mode+' rules consume exactly one shot',state['rules']['shots']==1)
+  page.locator('#replay').click()
+  check(mode+' replay view enabled',page.evaluate('CueLab.status().replay'))
+  check(mode+' replay preserves live state',page.evaluate('CueLab.snapshot()')==state)
+  page.locator('#replay').click()
+  page.locator('#undo').click()
+  check(mode+' undo restores complete state',page.evaluate('CueLab.snapshot()')==before)
+ # Presets, real UI and API level checks.
+ for kind in ['draw','follow','stun','english','masse','jump']:
+  page.locator('[data-tab="table"]').click()
+  page.locator('[data-drill="'+kind+'"]').click()
+  check(kind+' practice preset validates',page.evaluate('CueLab.getRules().mode==="practice"&&CueLab.validateSave(CueLab.snapshot())'))
+  page.locator('#shoot').click();page.locator('#finish').click()
+  check(kind+' practice shot settles',page.evaluate('!CueLab.status().shotRunning&&CueLab.getWorld().atRest()'))
+  page.locator('#undo').click()
+ # Save/load through buttons, with explicitly labeled storage shim.
+ page.locator('[data-tab="table"]').click()
+ page.locator('.subtabs [data-page="saves"]').click()
+ saved=page.evaluate('CueLab.snapshot()')
+ page.locator('#saveLayout').click()
+ page.evaluate('CueLab.setShot({power:31})')
+ page.locator('#loadLayout').click()
+ check('Save/load restores exact position using storage shim',page.evaluate('CueLab.snapshot()')==saved)
+ # Export real downloadable JSON, then re-import through the real file input.
+ with page.expect_download() as download_info: page.locator('#export').click()
+ download=download_info.value
+ download.save_as(str(root/'verification'/'test-save.json'))
+ exported=json.loads((root/'verification'/'test-save.json').read_text())
+ check('Exported JSON matches current save',exported==saved)
+ page.evaluate('CueLab.setShot({power:17})')
+ page.set_input_files('#importFile',str(root/'verification'/'test-save.json'))
+ page.wait_for_timeout(80)
+ check('Import restores exported state',page.evaluate('CueLab.snapshot()')==saved)
+ invalid=json.loads(json.dumps(saved));invalid['world']['balls'][0]['p'][0]='invalid'
+ page.set_input_files('#importFile',{'name':'invalid.json','mimeType':'application/json','buffer':json.dumps(invalid).encode()})
+ page.wait_for_timeout(50)
+ check('Invalid import preserves current state',page.evaluate('CueLab.snapshot()')==saved)
+ check('Incomplete rules state rejected',page.evaluate('(()=>{const s=CueLab.snapshot();delete s.rules.shots;return !CueLab.validateSave(s);})()'))
+ check('Invalid orientation rejected',page.evaluate('(()=>{const s=CueLab.snapshot();s.world.balls[0].q=[0,0,0,0];return !CueLab.validateSave(s);})()'))
+ # Ensure a scratched 8-ball loser can restore a finished game.
+ check('Finished game with scratched cue validates',page.evaluate('(()=>{const s=CueLab.snapshot();s.rules.winner=1;s.world.balls[0].active=false;return CueLab.validateSave(s);})()'))
+ # Push-out declaration survives unrelated UI refresh.
+ page.select_option('#mode','9ball')
+ page.locator('[data-tab="shot"]').click();page.locator('.subtabs [data-page="aim"]').click()
+ page.evaluate('CueLab.setShot({angle:0,side:0,up:0,elevation:0,power:95});CueLab.shoot();CueLab.finish();')
+ if page.evaluate('CueLab.getRules().pushAvailable'):
+  page.check('#push');page.locator('#guide').click()
+  check('Push-out selection survives guide toggle',page.is_checked('#push'))
+  page.locator('#shoot').click();page.locator('#finish').click()
+  check('Push-out presents take or return controls',page.locator('#choice').is_visible())
+  page.locator('#returnShot').click()
+  check('Returned push-out resolves pending choice',page.evaluate('CueLab.getRules().choice===null'))
+ # Called-shot UI does not permit silently skipping the call.
+ page.evaluate("CueLab.restore({ ...CueLab.snapshot(), rules:{...CueLab.getRules().snapshot(),mode:'8ball',break:false,pushAvailable:false,choice:null} })")
+ check('Missing called shot disables Shoot',page.locator('#shoot').is_disabled())
+ page.check('#safety');check('Safety enables legal shot setup',page.locator('#shoot').is_enabled())
+ # Arrange placement and addition without overwriting unrelated balls.
+ page.locator('[data-tab="table"]').click();page.locator('.subtabs [data-page="arrange"]').click();page.locator('#arrange').click()
+ check('Arrange explicitly switches to practice',page.evaluate('CueLab.getRules().mode==="practice"&&CueLab.status().arranging'))
+ page.select_option('#editBall','15')
+ page.locator('#table').click(position={'x':250,'y':400})
+ check('Arrange creates selected ball at valid point',page.evaluate('CueLab.getWorld().get(15)?.active===true'))
+ page.locator('#removeBall').click()
+ check('Remove deactivates chosen ball',page.evaluate('CueLab.getWorld().get(15).active===false'))
+ check('No browser script errors in functional session',not report['errors'])
+ page.close()
+ # Phone and tablet/desktop layouts including called-shot panel after a break.
+ for name,w,h,touch in [('desktop',1440,900,False),('phone',412,915,True),('landscape',915,412,True)]:
+  page=browser.new_page(viewport={'width':w,'height':h},device_scale_factor=1,has_touch=touch)
+  page.on('pageerror',lambda e:report['errors'].append(str(e)))
+  page.on('dialog',lambda d:d.accept());page.set_content(html);page.wait_for_timeout(150)
+  size=page.evaluate('({w:innerWidth,scrollW:document.body.scrollWidth,h:innerHeight,scrollH:document.body.scrollHeight})')
+  check(name+' initial has no horizontal overflow',size['scrollW']<=w)
+  check(name+' Shoot is visible',page.locator('#shoot').is_visible())
+  if touch:
+   page.locator('#table').tap(position={'x':150,'y':100})
+   check(name+' touch aiming does not shoot',not page.evaluate('CueLab.status().shotRunning'))
+  page.evaluate('CueLab.setShot({angle:0,power:95});CueLab.shoot();CueLab.finish();')
+  check(name+' post-break has no horizontal overflow',page.evaluate('document.body.scrollWidth<=innerWidth'))
+  page.screenshot(path=str(root/'verification'/f'{name}.png'),full_page=True)
+  # Native localStorage unavailable on about:blank: graceful warning, no crash.
+  page.locator('[data-tab="table"]').click();page.locator('.subtabs [data-page="saves"]').click();page.locator('#saveLayout').click()
+  check(name+' blocked storage has graceful error',page.locator('#toast').is_visible())
+  page.close()
+ browser.close()
+check('No browser script errors across every viewport',not report['errors'])
+report['passed']=len(report['checks']);report['failed']=0
+(root/'verification'/'browser-v0.2-results.json').write_text(json.dumps(report,indent=2))
+print(json.dumps(report,indent=2))
