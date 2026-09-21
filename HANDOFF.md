@@ -12,6 +12,14 @@ Published the previously attached game to the requested pool repo. Added viewpor
 
 The original physics/rules engines are byte-for-byte unchanged. All nine modes, stroke mechanics, saves, undo, replay, drills, calls and push-out choices are preserved. Save schema remains cue-lab-save-v1. Local file saves do not transfer automatically to a new hosted origin; use Export/Import.
 
+## 0.3 design roadmap
+
+`ROADMAP-0.3.md` is the controlling design roadmap for the next major iteration. It preserves 2D as a first-class view and adds optional shooter/elevated/broadcast 3D cameras, paged settings, APA-style SL2-SL7 computer opponents, a self-selected human skill profile, cue-ball size/mass presets, table/felt appearance presets, and a realistic chalk system.
+
+The human and computer players should share one stochastic execution model. Distinguish small ordinary stroke error from a true tip-slip miscue. The pre-shot mishit percentage must be computed from the same distribution used to execute the stroke, with deterministic seeds saved so Undo and Replay never reroll the outcome. Skill, intended tip contact, actual delivered tip contact, cue elevation, speed, chalk condition, cue-ball geometry and tip-friction limits are inputs. APA skill numbers are gameplay profiles, not official APA-derived shot-accuracy or miscue percentages.
+
+Cue-ball diameter and mass must be separate internally. Standard, oversize bar-box and heavy/magnetic presets are planned. A larger/heavier cue ball should not be described as simply unable to take spin; model the actual effects on inertia, draw/follow response, ball-to-ball contact geometry, hop tendency and collision behavior.
+
 ## Verification
 
 114 unit tests, 112 original browser checks, 199 precision/layout checks and six modular-entry checks passed with no page-script errors. Eight viewport sizes include portrait/landscape phones, tablet and desktop, down to 320x568 and 740x360. Published runtime file hashes matched the tested local source. Details and limits are in verification/REPORT.md; reproducible unit/browser scripts are in the repo. The source ZIP also contains detailed raw results and screenshots.
@@ -28,8 +36,12 @@ Source publication is complete, but GitHub Pages was disabled at inspection and 
 
 Keep physics, rules and UI separate. Preserve effectively touching rack geometry and simultaneous-contact solving; the earlier uniformly spaced rack caused a break artifact. No canned draw reversal or invented flat-sidespin curvature. Keep Club rules labeled and limitations documented. Aiming must never shoot. Replay must not rescore. Undo restores table, rules and controls together. Preview placement must not mutate any live ball/rule state before confirmation. Cancel/Escape must leave that state unchanged. Keep all controls reachable without scroll, not merely clipped by overflow:hidden. Preserve saved-state compatibility and explicit practice switching before arrangement. No backend, tracking, CDN runtime assets or unrelated project edits.
 
+For 0.3, camera and table-theme settings must not silently alter physics. Stochastic execution must be reproducible from saved state. Displayed risk and actual shot execution must come from the same model. Do not present gameplay calibration as official APA data.
+
 ## Unresolved and next action
 
-Enable and verify Pages, then test on Jon's actual phone/browser. Do not replace this tested UI while improving physics. Provisional rail/pocket/shaft/tip/massé/jump behavior still needs measured calibration. Cue-shaft obstruction is absent. Kitchen escape is a proxy rather than a true head-string crossing event. Some special rerack, break, referee and compound-foul exceptions remain. No AI or online multiplayer.
+Enable and verify Pages, then test on Jon's actual phone/browser. For 0.3, implement settings/schema migration first, then the shared skill-based execution and mishit/miscue model, chalk integration, cue-ball size/mass physics, 3D renderer, and AI in that order. Preserve the working 0.2 baseline while adding each layer.
+
+Provisional rail/pocket/shaft/tip/massé/jump behavior still needs measured calibration. Cue-shaft obstruction is absent. Kitchen escape is a proxy rather than a true head-string crossing event. Some special rerack, break, referee and compound-foul exceptions remain. No AI or online multiplayer is implemented yet.
 
 Keep the original v0.1 source attachment and this v0.2 repo checkpoint recoverable. Update HANDOFF.md after meaningful changes, then ProjectStatus STATUS.md last.
