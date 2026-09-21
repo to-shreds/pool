@@ -222,6 +222,106 @@ The analysis budget must be bounded so the browser remains responsive. Progressi
 
 Timeout usage is per game within a match, not per entire match, when using APA-style rules.
 
+
+## APA match preset and rule-derived features
+
+Cue Lab should add dedicated **APA 8-Ball** and **APA 9-Ball** match presets rather than changing the existing Club rules. APA-specific rules, scoring and presentation should activate only when the APA preset is selected.
+
+### Match start and breaking
+
+- Add a playable lag before an APA match. Offer Play lag / Random / Skip in settings. AI lag accuracy should use its execution model.
+- Winner of the lag breaks the first rack; thereafter the winner of each rack breaks the next. The non-breaking player racks.
+- Enforce the APA legal-break requirement: the breaker must start behind the head string and either pocket an object ball or drive at least four object balls to rails. A pre-rack rail-first break is not allowed.
+- If the rack is contacted but the break is illegal, rerack for the same breaker; if the illegal break also scratches, rerack for the other player.
+- A legal but deliberately soft/safe break should trigger a non-foul APA sportsmanship warning rather than inventing ball-in-hand.
+
+### APA 8-Ball
+
+- Groups may be assigned from the break when only one category is pocketed. If both categories are pocketed, the table remains open.
+- Only the 8-ball pocket needs to be marked. Add a physical-looking pocket marker/coaster interaction rather than requiring an abstract dropdown in APA mode.
+- An 8-ball made on the break wins the rack unless the cue ball is fouled, in which case it loses.
+- The 8-ball must be made on a separate stroke after the last group ball; making the last group ball and 8 on the same stroke loses.
+- On a foul during a legal 8-ball break, ball-in-hand is behind the head string and the first object-ball contact must be outside the head string. Replace the current kitchen proxy with explicit head-string crossing/contact logic before calling APA mode complete.
+- Ordinary shots are not called-shot pool. Legal slop counts except for the marked 8-ball pocket.
+
+### APA 9-Ball
+
+- Add a true handicapped APA 9-ball ruleset separate from the existing rotation-to-the-9 mode.
+- Balls 1 through 8 score one point each; the 9 scores two. Continue racks until a player reaches the points required for their skill level.
+- A legally pocketed 9 ends that rack. A 9 on the break wins the rack unless the shooter fouls; after a break foul the 9 is spotted.
+- Push-outs are disabled in handicapped APA play. Keep push-outs available only in rulesets that permit them, such as the existing Club/other rotation modes.
+- Pocketed balls on a foul remain down and become dead balls except where the 9 must be spotted.
+- If a true APA 9-ball handicap mode is exposed, support its format-specific skill range rather than pretending 8-ball's SL2-SL7 scale is the official 9-ball range. Internally, AI ability can still map to a shared continuous rating.
+
+### Handicap races and scorekeeping
+
+- Add an APA Match setup option that uses the current official Games Must Win / Points Required To Win charts for the selected players' skill levels. Keep these chart values as versioned data sourced from the current APA manual rather than attempting to reverse-engineer The Equalizer formula.
+- Do not claim to calculate an official APA skill level. APA states that handicap calculation uses multiple factors and specific formulas. Cue Lab can expose performance statistics or a clearly labeled Cue Lab skill estimate, but not an "official APA handicap."
+- Automatically track complete innings, defensive shots, break-and-runs, 8-on-the-break, early 8, 8-ball scratch, wrong-pocket 8, 9-on-the-snap, dead balls and rack/match score where applicable.
+- Add an optional APA-style scorecard view and post-match summary.
+
+### Defensive play
+
+- Preserve a pre-shot **Defense / Safety** declaration. Human intent cannot reliably be inferred after the fact, so the player should be able to declare it. The computer opponent already knows its own intent and can log defensive shots automatically.
+- A legal defensive shot that accidentally pockets a legal ball does not automatically end the inning; apply the APA continuation rule.
+- Add defensive-shot, safety-success and escape-success statistics. These should also feed the timeout coach and AI evaluator.
+- Two-way shots should remain offensive shots unless the actual intent is defensive.
+
+### Table size
+
+Separate **table brand/theme** from **table size**.
+
+- Add 7-foot, 8-foot and 9-foot geometry presets plus an Advanced/custom size.
+- Table size changes actual playing-surface geometry, shot distances, cluster frequency, route planning and AI evaluation.
+- Felt/table brand remains cosmetic unless a separate Advanced Table Physics preset is chosen.
+- Record table size in match statistics. APA scoresheets explicitly record table size because it is relevant to handicap review.
+
+### Frozen balls and referee logic
+
+- Add automatic frozen-to-rail and frozen-to-ball detection and expose the state visually before the shot.
+- Implement the APA frozen-ball rail requirements and cue-ball-frozen first-contact rules as a dedicated rules-engine feature.
+- Because Cue Lab knows exact event timing, close-hit disputes do not need human judgment. Add an optional **Referee Replay** that shows the first contacted ball and timestamps/slow motion for educational realism.
+- Keep an optional manual/referee setting only for a future social multiplayer mode, not normal single-device play.
+
+### Stalemates
+
+Add **Offer stalemate** in APA mode.
+
+- 8-ball: rerack, original breaker breaks again, and the stalemated game's innings/defensive shots do not count.
+- 9-ball: end the rack, keep points already earned, count remaining balls as dead, and retain the innings/defensive-shot record.
+- Against AI, acceptance should be based on the actual locked-table state rather than arbitrary randomness.
+
+### Balls off table and pocket edge cases
+
+- Complete APA spotting rules for balls driven off the playing surface, including delayed spotting behavior in 8-ball and immediate spotting in 9-ball.
+- Longer-term pocket calibration should recognize that a ball that enters a pocket and returns to the bed is not pocketed, a long-hanging ball that later falls should be restored, and wedged balls leaning into a pocket are considered pocketed. These are physical-model improvements rather than UI rules.
+
+### Equipment and house restrictions
+
+- Add an APA League equipment preset: no specialty jump cue in standard League play; break cues are for breaks; jump/massé shots may be attempted with a regular shooting cue.
+- Add a separate **House restrictions** setting that can disable jump and/or massé even where APA permits them, reflecting host-location rules.
+- Equipment restrictions should affect which controls/cues are available, not secretly alter physics.
+
+### Pace of play
+
+Add an optional non-punitive APA pace display:
+
+- Average shot guideline: 20 seconds.
+- Special shooting situation: 45 seconds.
+- Coaching timeout: one minute.
+- Exceeding the normal guideline is not automatically a foul in APA mode. Use a subtle timer/warning and match statistics rather than forced ball-in-hand.
+
+### Timeout refinements from APA rules
+
+- A timeout cannot be charged before the rack has been struck.
+- During ball-in-hand, the Coach timeout may recommend and visually place the cue ball on the ghost/demo table. Applying the suggestion should place the live cue ball only after explicit user confirmation.
+- The APA-style timeout screen may show a one-minute coaching clock after analysis is ready; computation time should not consume the coaching minute.
+- Keep timeout counts per rack/game according to skill level as already specified.
+
+### Lower-priority APA features
+
+Do not burden 0.3 with team-roster administration, membership status, weekly fees, forfeits, 23-Rule roster limits, standings, or tournament paperwork. Those are good candidates only for a future optional **League Night / Team Manager** mode. The immediate goal is to reproduce the parts of APA that materially change what happens at the table.
+
 ## Additional 0.3 gameplay items
 
 - Match setup: game, Human/Computer, opponent skill, player skill, race length, camera, table, felt, assists and break format.
@@ -253,9 +353,10 @@ Timeout usage is per game within a match, not per entire match, when using APA-s
 7. AI candidate generator/evaluator shared by computer opponents and timeout coaching.
 8. Coaching timeout analysis, visual demo and APA-style timeout counts.
 9. SL2-SL7 opponent profiles using the shared execution model.
-10. Table/felt appearance presets.
-11. Match setup, stats, replays and polish.
-12. Broad regression plus real-device testing and physics calibration.
+10. APA match rules/scoring layer, including lag, handicap races, defensive-shot scorekeeping, table sizes, frozen-ball rules and APA 9-ball point scoring.
+11. Table/felt appearance presets.
+12. Match setup, stats, replays and polish.
+13. Broad regression plus real-device testing and physics calibration.
 
 ## Acceptance rules
 
