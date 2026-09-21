@@ -1,0 +1,45 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict');
+const P=require('../src/physics.js'),{R,M,I,L,W,World,ball,DT}=P;
+const near=(a,b,tol=1e-7)=>assert.ok(Math.abs(a-b)<tol,`${a} != ${b} (tol ${tol})`);
+function clean(){return {...P.defaults,slide:0,roll:0,spin:0,ballRestitution:1,ballFriction:0,deflection:0};}
+test('center strike has no torque',()=>{const w=new World([ball(0,.5,.5)]);const r=w.strike(0,0,0,0,60);assert.ok(r.ok);near(P.norm(w.get(0).w),0);assert.ok(w.get(0).v[0]>0);});
+test('follow and draw spin have opposite physical signs',()=>{for(const sign of [-1,1]){const w=new World([ball(0,.5,.5)]);w.strike(0,0,sign*.5,0,60);assert.equal(Math.sign(w.get(0).w[1]),sign);}});
+test('sliding transitions analytically to 5/7 speed',()=>{const b=ball(0,.5,.5);b.v[0]=1;const t=2/(7*P.defaults.slide*P.G);P.cloth(b,t,P.defaults);near(b.v[0],5/7);near(P.norm(P.slip(b)),0);});
+test('sliding friction removes total kinetic energy',()=>{const b=ball(0,.5,.5);b.v=[2,.3,0];b.w=[20,-40,50];const e=P.energy(b);P.cloth(b,.06,P.defaults);assert.ok(P.energy(b)<e);});
+test('roll friction stops rather than reverses a slow ball',()=>{const b=ball(0,.5,.5);b.v=[.001,0,0];b.w=[0,.001/R,0];P.cloth(b,1,P.defaults);near(P.norm(b.v),0);near(P.norm(b.w),0);});
+test('sidespin decays without changing a flat rolling direction',()=>{const w=new World([ball(0,.4,.6)],{deflection:0});const b=w.get(0);b.v=[.6,0,0];b.w=[0,.6/R,80];for(let i=0;i<480;i++)w.step();near(b.p[1],.6);assert.ok(b.w[2]<80);});
+test('no cloth drag in flight',()=>{const b=ball(0,.5,.5);b.p[2]=.4;b.v=[1,2,1];b.w=[3,4,5];const saved=P.clone(b);P.cloth(b,.1,P.defaults);assert.deepEqual(b,saved);});
+test('gravity follows a ballistic parabola above the cloth',()=>{const w=new World([ball(0,.5,.5)],clean());const b=w.get(0);b.p[2]=.5;b.v=[1,0,1];for(let i=0;i<48;i++)w.step();near(b.p[0],.6);near(b.p[2],.5+.1-.5*P.G*.1*.1,1e-6);near(b.v[2],1-P.G*.1,1e-6);});
+test('elevated cue impulse points down; slate rebound produces lift',()=>{const info=P.strikeInfo(0,0,0,60,90);assert.ok(info.d[2]<0);const w=new World([ball(0,.5,.5)]);w.strike(0,0,0,60,90);assert.ok(w.get(0).v[2]>0);for(let i=0;i<70;i++)w.step();assert.ok(w.get(0).p[2]>R+.04);});
+test('low-speed cloth impact does not bounce indefinitely',()=>{const b=ball(0,.5,.5);b.v[2]=-.08;P.floorImpact(b,P.defaults);near(b.v[2],0);});
+test('slate contact is passive',()=>{const b=ball(0,.5,.5);b.v=[3,2,-2];b.w=[40,50,60];const e=P.energy(b);P.floorImpact(b,P.defaults);assert.ok(P.energy(b)<=e+1e-9);});
+test('legal contact and miscue region are distinct',()=>{assert.equal(P.strikeInfo(0,.5,.1,0,50).miscue,false);assert.equal(P.strikeInfo(0,.75,0,0,50).miscue,true);});
+test('the user can select near-edge contact without infinite spin',()=>{const info=P.strikeInfo(0,.97,0,0,99);assert.ok(info.miscue);assert.ok(info.r.every(Number.isFinite));assert.ok(info.J>0&&info.J<2);});
+test('cue tip under cloth is rejected',()=>{const w=new World([ball(0,.5,.5)]);const r=w.strike(0,0,-.97,0,50);assert.equal(r.ok,false);assert.ok(w.atRest());});
+test('a moving table cannot receive another stroke',()=>{const w=new World([ball(0,.5,.5)]);assert.ok(w.strike(0,0,0,0,30).ok);assert.equal(w.strike(0,0,0,0,30).ok,false);});
+test('head-on elastic collision swaps linear velocity',()=>{const a=ball(0,.5,.5),b=ball(1,.5+2*R,.5);a.v=[2,0,0];P.contact(a,b,clean());near(a.v[0],0);near(b.v[0],2);});
+test('oblique elastic collision conserves linear momentum and energy',()=>{const a=ball(0,.5,.5),b=ball(1,.5+2*R*Math.cos(.6),.5+2*R*Math.sin(.6));a.v=[2,.1,0];b.v=[-.2,0,0];const e=P.energy(a)+P.energy(b),mom=P.add(a.v,b.v);P.contact(a,b,clean());near(P.energy(a)+P.energy(b),e);P.add(a.v,b.v).forEach((v,i)=>near(v,mom[i]));});
+test('ball friction produces throw and does not add energy',()=>{const a=ball(0,.5,.5),b=ball(1,.5+2*R,.5);a.v=[2,0,0];a.w=[0,0,100];const e=P.energy(a)+P.energy(b);P.contact(a,b,P.defaults);assert.ok(Math.abs(b.v[1])>.01);assert.ok(P.energy(a)+P.energy(b)<e);});
+test('simultaneous symmetric contacts stay symmetric',()=>{const a=ball(0,.5,.5),b=ball(1,.5+2*R*Math.cos(Math.PI/6),.5+R),c=ball(2,.5+2*R*Math.cos(Math.PI/6),.5-R);a.v=[2,0,0];P.simultaneousContacts([a,b,c],clean());near(b.v[0],c.v[0]);near(b.v[1],-c.v[1]);});
+test('swept collision detection catches a 40 m/s impact',()=>{const w=new World([ball(0,.4,.5),ball(1,.8,.5)],clean());w.get(0).v[0]=40;w.step(.02);assert.ok(w.events.some(e=>e.type==='ball'));assert.ok(w.get(1).v[0]>39.9);});
+test('a ball initially touching another can be struck without tunneling',()=>{const w=new World([ball(0,.5,.5),ball(1,.5+2*R,.5)],clean());w.get(0).v[0]=2;w.step();assert.ok(w.events.some(e=>e.type==='ball'));});
+test('identical physics steps are deterministic across display batching',()=>{const a=new World(P.rack('9ball')),b=new World(P.rack('9ball'));a.strike(.015,.2,-.1,5,80);b.strike(.015,.2,-.1,5,80);for(let i=0;i<480;i++)a.step();for(let i=0;i<60;i++)b.step(1/60);assert.deepEqual(a.snapshot(),b.snapshot());});
+test('orientation remains a unit quaternion',()=>{const w=new World([ball(0,.5,.6)]);w.strike(.2,.5,.2,10,65);for(let i=0;i<1500;i++)w.step();near(Math.hypot(...w.get(0).q),1);});
+test('backspin reverses the cue ball after object-ball contact',()=>{const w=new World([ball(0,.84,W/2),ball(1,1.28,W/2)],{deflection:0});w.strike(0,0,-.5,0,53);let reversed=false;for(let i=0;i<700;i++){w.step();if(w.events.some(e=>e.type==='ball')&&w.get(0).v[0]<-.1)reversed=true;}assert.ok(reversed);});
+test('follow advances the cue ball after object-ball contact',()=>{const w=new World([ball(0,.84,W/2),ball(1,1.28,W/2)],{deflection:0});w.strike(0,0,.5,0,53);let forward=false;for(let i=0;i<700;i++){w.step();if(w.events.some(e=>e.type==='ball')&&w.get(0).p[0]>1.28)forward=true;}assert.ok(forward);});
+test('elevated sidespin curves without an artificial lateral force',()=>{const w=new World([ball(0,.8,.4)],{deflection:0});w.strike(0,.46,.02,68,54);const initialVy=w.get(0).v[1];assert.ok(Math.abs(w.get(0).w[0])>10);for(let i=0;i<360;i++)w.step();assert.ok(Math.abs(w.get(0).p[1]-(.4+initialVy*.75))>.03);});
+test('jump shot clears a ball instead of falsely colliding in 2D',()=>{const w=new World([ball(0,.65,W/2),ball(8,.94,W/2),ball(1,1.62,W/2)]);w.strike(0,0,0,60,92);for(let i=0;i<120;i++)w.step();assert.ok(!w.events.some(e=>e.type==='ball'&&(e.a===8||e.b===8)));assert.ok(w.get(0).p[0]>.94);});
+for(let pocket=0;pocket<6;pocket++)test('straight rolling ball drops in pocket '+pocket,()=>{
+ const p=P.pockets[pocket],dx=p.x-L/2,dy=p.y-W/2,n=Math.hypot(dx,dy);
+ const b=ball(1,p.x-dx/n*.23,p.y-dy/n*.23);b.v=[dx/n*.8,dy/n*.8,0];b.w=[-b.v[1]/R,b.v[0]/R,0];const w=new World([b]);w.simulate();assert.ok(w.events.some(e=>e.type==='pocket'&&e.pocket===pocket));
+});
+test('rail English changes rebound direction',()=>{
+ const ys=[];for(const side of [-.5,.5]){const w=new World([ball(0,1.9,.6)],{deflection:0});w.strike(.3,side,0,0,50);while(!w.events.some(e=>e.type==='rail')&&w.time<3)w.step();ys.push(w.get(0).v[1]);}assert.ok(Math.abs(ys[0]-ys[1])>.05);
+});
+test('tight 8-ball rack remains stable at rest and breaks into multiple rails',()=>{const w=new World(P.rack());assert.ok(w.atRest());for(let i=0;i<50;i++)w.step();assert.ok(w.atRest());w.strike(0,0,0,0,95);assert.ok(w.simulate().settled);assert.equal(w.diagnostics.eventLimit,0);assert.ok(new Set(w.events.filter(e=>e.type==='rail'&&e.id>0).map(e=>e.id)).size>=4);});
+test('a ball above cushion height can leave the table',()=>{const w=new World([ball(0,L-.03,.5)],clean());w.get(0).p[2]=.4;w.get(0).v=[5,0,1];for(let i=0;i<80;i++)w.step();assert.ok(w.events.some(e=>e.type==='off'&&e.id===0));});
+test('placement rejects overlapping balls, off-table positions and outside-kitchen spots',()=>{const w=new World([ball(0,.4,.5),ball(1,1,.5)]);assert.equal(P.place(w,0,1,.5),false);assert.equal(P.place(w,0,-1,.5),false);assert.equal(P.place(w,0,1.2,.5,true),false);assert.ok(P.place(w,0,.3,.3,true));});
+test('spotting searches past an occupied foot spot',()=>{const w=new World([ball(0,.5,.5),ball(1,L*.75,W/2),ball(2,1.5,.5)]);w.get(2).active=false;assert.ok(P.spot(w,2));assert.ok(w.get(2).p[0]>L*.75);assert.ok(P.norm(P.sub(w.get(1).p,w.get(2).p))>=2*R);});
+test('invalid timestep is rejected',()=>{const w=new World();assert.throws(()=>w.step(0),RangeError);assert.throws(()=>w.step(1),RangeError);});
+test('passive dynamics do not create energy through a break',()=>{const w=new World(P.rack());w.strike(.01,.2,.1,5,95);let prev=w.balls.reduce((s,b)=>s+(b.active?P.energy(b):0),0);for(let i=0;i<4000;i++){w.step();const e=w.balls.reduce((s,b)=>s+(b.active?P.energy(b):0),0);assert.ok(e<=prev+.00004,`Energy increased ${prev} -> ${e}`);prev=e;}assert.equal(w.diagnostics.eventLimit,0);});
