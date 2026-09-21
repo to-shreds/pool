@@ -22,6 +22,8 @@ Cue-ball diameter and mass must be separate internally. Standard, oversize bar-b
 
 0.3 also requires a top-level **Simulation / Arcade / Custom** realism preset. Arcade is the Candystand-style mode: exact human stroke delivery, no stochastic human mishit/miscue layer, no chalk-management penalty, and standard matched cue-ball physics by default, while preserving normal rules, deterministic table physics, spin controls, cameras, themes, replay, undo, and selected computer difficulty. Optional classic aim assists may be enabled separately. Custom allows mixing the realism subsystems.
 
+The 0.3 roadmap also requires an optional **APA-style coaching timeout**. Default 8-ball counts are SL2-SL3: two per game; SL4-SL7: one per game. A Coach timeout should use the same shot-search engine as the AI to recommend a practical shot or safety, explain aim/power/spin/position and strategy, optionally show alternatives, and demonstrate the stroke on a ghost copy without altering the live table. A simpler Aim-assist timeout may show an extended line/ghost ball/power and target zone. Coaching should optimize for the configured player's actual execution distribution, so a fragile perfect shot is not automatically recommended to a weaker player.
+
 ## Verification
 
 114 unit tests, 112 original browser checks, 199 precision/layout checks and six modular-entry checks passed with no page-script errors. Eight viewport sizes include portrait/landscape phones, tablet and desktop, down to 320x568 and 740x360. Published runtime file hashes matched the tested local source. Details and limits are in verification/REPORT.md; reproducible unit/browser scripts are in the repo. The source ZIP also contains detailed raw results and screenshots.
