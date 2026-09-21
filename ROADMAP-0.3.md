@@ -21,6 +21,20 @@ Add a paged Settings area with no scrolling. Suggested pages:
 
 Persist settings locally and include them in exported saves with backward-compatible defaults for old saves.
 
+## Gameplay realism preset
+
+Expose one top-level preset so realism can be changed without hunting through individual settings:
+
+- **Simulation**: skill-based human execution, actual mishit/miscue risk, chalk condition, selected cue-ball equipment physics, and normal simulation assists.
+- **Arcade**: Candystand-style forgiving pool. The user's selected aim, tip contact, elevation, and power are delivered exactly; stochastic human execution error and random miscues are disabled; chalk does not deplete or constrain tip friction; standard matched cue-ball physics are used by default. Game rules and the underlying deterministic ball/cushion physics remain active. Camera, table/felt appearance, spin controls, undo, replay, and computer opponents still work.
+- **Custom**: every realism subsystem can be enabled or disabled independently.
+
+The UI may describe Arcade as the "cheat / classic" option in its tooltip, but the primary label should be **Arcade**. Changing this preset must show the individual settings it changed, and switching to Custom must preserve the current values rather than resetting them.
+
+Arcade should optionally expose classic assists without requiring them: extended aim line, ghost-ball contact marker, projected first object-ball path, and projected cue-ball tangent/stun line. More advanced spin-aware path prediction may be added later, but it must be labeled as an assist rather than actual future certainty.
+
+Computer difficulty remains meaningful in Arcade mode. The opponent still uses its selected SL2-SL7 decision/execution profile; Arcade removes human execution randomness unless the user explicitly chooses Custom. A future symmetric option can allow exact-execution computers for sandbox/demo use.
+
 ## Camera and 3D presentation
 
 Camera modes:
