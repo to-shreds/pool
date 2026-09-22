@@ -1,53 +1,35 @@
 # Cue Lab handoff
 
-## Current state and controlling sources
+## Current build and source of truth
 
-Version 0.2.0 is the working no-scroll/precision-placement release. The canonical game source is now `to-shreds/pool`, main, rather than the original conversation attachment. Root `index.html`, `src/physics.js`, `src/rules.js`, `src/placement.js`, `src/app.js` and `src/style.css` control the application. `python3 build.py` creates `Cue-Lab.html` from those same files. There is no separate template or ui.js to edit.
+Cue Lab 0.3.0 is the current implemented source checkpoint. Canonical repository: `to-shreds/pool`. The previous 0.2 baseline is preserved at `baseline-v0.2.0`, based on commit `42ee495bea2d3ef63f08796c8d3d68dac8262b89`. The approved `ROADMAP-0.3.md` remains the broader intended scope; `RELEASE-0.3.md` distinguishes implemented systems from calibration and unfinished extensions.
 
-Read `to-shreds/ProjectStatus/README.md` and `projects/cue-lab/STATUS.md` for readiness and next steps. This handoff controls implementation continuity; source and tests take precedence over chat recollection.
+Read `to-shreds/ProjectStatus/README.md` and `projects/cue-lab/STATUS.md` for current readiness and the final published commit. The runtime source is root `index.html`, `src/style.css`, `features.css`, `physics.js`, `rules.js`, `apa.js`, `settings.js`, `execution.js`, `session.js`, `placement.js`, `renderer3d.js`, `coach.js`, `worker.js`, and `app.js`. `build.py` generates `src/worker-bundle.js` and standalone `Cue-Lab.html`; edit original modules, not the generated bundle.
 
-## Completed benchmark
+## Completed systems
 
-Published the previously attached game to the requested pool repo. Added viewport-fitted controls with Shot/Aim/Spin/Cue angle, separate Practice and Match pages, always-visible power/Shoot, quick spin/elevation presets, and paginated rules/help/history. Added a transactional full-screen placement editor: default 6x, 2x-10x zoom, relative drag away from the ball, minimap relocation, recenter, 1/5/10 mm nudges, hold/release, keyboard arrows, original-position reset, validity feedback, explicit confirmation and side-effect-free Cancel/Escape. It also supports practice object balls.
+Searchable paged Settings: 68 controls, 12 categories, no scrolling, tooltips, draft/apply/cancel and persisted changes. Arcade/Simulation/Custom; deterministic player delivery and same-model risk; actual cue-ball geometry/mass; world-specific table sizes; chalk/friction; real optional WebGL cameras and themes with 2D fallback. AI/coach share actual off-thread physics search. Ghost demos cannot change the live state; Apply does not shoot. CPU pause, cancellation, sequential lag, matches, statistics, named drills and separate APA8/9 rules are working. All original game modes and old JSON save compatibility remain.
 
-The original physics/rules engines are byte-for-byte unchanged. All nine modes, stroke mechanics, saves, undo, replay, drills, calls and push-out choices are preserved. Save schema remains cue-lab-save-v1. Local file saves do not transfer automatically to a new hosted origin; use Export/Import.
-
-## 0.3 design roadmap
-
-`ROADMAP-0.3.md` is the controlling design roadmap for the next major iteration. It preserves 2D as a first-class view and adds optional shooter/elevated/broadcast 3D cameras, paged settings, APA-style SL2-SL7 computer opponents, a self-selected human skill profile, cue-ball size/mass presets, table/felt appearance presets, and a realistic chalk system.
-
-The human and computer players should share one stochastic execution model. Distinguish small ordinary stroke error from a true tip-slip miscue. The pre-shot mishit percentage must be computed from the same distribution used to execute the stroke, with deterministic seeds saved so Undo and Replay never reroll the outcome. Skill, intended tip contact, actual delivered tip contact, cue elevation, speed, chalk condition, cue-ball geometry and tip-friction limits are inputs. APA skill numbers are gameplay profiles, not official APA-derived shot-accuracy or miscue percentages.
-
-Cue-ball diameter and mass must be separate internally. Standard, oversize bar-box and heavy/magnetic presets are planned. A larger/heavier cue ball should not be described as simply unable to take spin; model the actual effects on inertia, draw/follow response, ball-to-ball contact geometry, hop tendency and collision behavior.
-
-0.3 also requires a top-level **Simulation / Arcade / Custom** realism preset. Arcade is the Candystand-style mode: exact human stroke delivery, no stochastic human mishit/miscue layer, no chalk-management penalty, and standard matched cue-ball physics by default, while preserving normal rules, deterministic table physics, spin controls, cameras, themes, replay, undo, and selected computer difficulty. Optional classic aim assists may be enabled separately. Custom allows mixing the realism subsystems.
-
-The 0.3 roadmap also requires an optional **APA-style coaching timeout**. Default 8-ball counts are SL2-SL3: two per game; SL4-SL7: one per game. A Coach timeout should use the same shot-search engine as the AI to recommend a practical shot or safety, explain aim/power/spin/position and strategy, optionally show alternatives, and demonstrate the stroke on a ghost copy without altering the live table. A simpler Aim-assist timeout may show an extended line/ghost ball/power and target zone. Coaching should optimize for the configured player's actual execution distribution, so a fragile perfect shot is not automatically recommended to a weaker player.
-
-The current APA rules review also makes a dedicated **APA Match** preset part of the 0.3 roadmap. Do not retrofit APA behavior into Club rules. APA 8-ball should support a playable lag, winner-breaks sequencing, non-breaker racking, APA legal-break handling, group assignment from the break, marked-pocket 8-ball play, 8-on-break win/loss handling, separate last-ball/8 requirement, and true head-string ball-in-hand logic. APA handicapped 9-ball should use ball-count scoring, current points-to-win charts, dead balls, 9-on-the-snap behavior and no push-out. Add innings/defensive-shot scorekeeping, APA event stats, table-size geometry, frozen-ball rules, stalemates, off-table spotting, optional referee replay, equipment/house restrictions and non-punitive pace guidance. See ROADMAP-0.3.md for details.
+Detailed implementation and scope: `docs/SETTINGS.md`, `EXECUTION.md`, `AI-COACH.md`, `APA.md`, `PHYSICS.md`, `RULES.md` and `RELEASE-0.3.md`.
 
 ## Verification
 
-114 unit tests, 112 original browser checks, 199 precision/layout checks and six modular-entry checks passed with no page-script errors. Eight viewport sizes include portrait/landscape phones, tablet and desktop, down to 320x568 and 740x360. Published runtime file hashes matched the tested local source. Details and limits are in verification/REPORT.md; reproducible unit/browser scripts are in the repo. The source ZIP also contains detailed raw results and screenshots.
+See `verification/REPORT-v0.3.md` and the raw result files. The final unit suite has 213 passing cases. The seeded varied-table/equipment stress suite contains 256 accepted, settled shots with finite state, no event caps and no energy rise beyond the documented tolerance. Browser results are separately reported for functional flows, precision/layout, actual old-save migration/multi-rack/drills, modular assets and real WebGL.
 
-Browser tests inject actual HTML because administrator policy blocks normal file/loopback navigation. The modular test fulfills actual local assets. Successful storage uses a disclosed in-memory shim. These are not native local-file, physical Android, live URL, accessibility-zoom or browser-restart persistence tests.
+Browser tests used the actual HTML via `page.set_content` because administrator policy blocks normal file and loopback navigation in the build environment. Successful persistence tests used an explicit localStorage shim; native unavailable storage was tested separately. Real WebGL used headed Chromium with Xvfb and ANGLE SwiftShader, not a physical Android GPU. Native device performance and browser-restart persistence remain unverified.
 
-GitHub Actions run `35657497110` also passed all 114 unit tests from a fresh checkout and rebuilt the identical standalone artifact (artifact ID `10665027526`). That is build verification, not a Pages deployment.
+A stress-discovered multi-ball jaw jam was corrected with passive low-speed contact projection and a preserved regression, not by disabling the event-cap diagnostic. Graphics inspection caught and fixed felt/wood z-fighting. CPU re-entrancy, stale worker cancellation, copied demo state, deterministic undo, phase changes and old saves were tested explicitly.
 
-## Hosting state
+## Hosting
 
-Source publication is complete, but GitHub Pages was disabled at inspection and no Pages-administration action exists in the available connector. The static site is ready for Settings > Pages > Deploy from a branch > main > /(root) > Save. `.github/workflows/verify.yml` tests and builds the offline artifact; it does not enable Pages. Do not claim a working public game URL until a deployment and served content are checked.
+GitHub Pages was still disabled at the last repository metadata read (`has_pages=false`). The source is a static site and `.nojekyll` is present. Do not claim a working public game URL until Pages is enabled and actual served content is checked. Source publication and test/build CI are separate from hosting. See ProjectStatus for the final publication result.
 
 ## Do not break
 
-Keep physics, rules and UI separate. Preserve effectively touching rack geometry and simultaneous-contact solving; the earlier uniformly spaced rack caused a break artifact. No canned draw reversal or invented flat-sidespin curvature. Keep Club rules labeled and limitations documented. Aiming must never shoot. Replay must not rescore. Undo restores table, rules and controls together. Preview placement must not mutate any live ball/rule state before confirmation. Cancel/Escape must leave that state unchanged. Keep all controls reachable without scroll, not merely clipped by overflow:hidden. Preserve saved-state compatibility and explicit practice switching before arrangement. No backend, tracking, CDN runtime assets or unrelated project edits.
+2D stays supported and no-scroll controls must be reachable, not just clipped. Preserve physics/rules/render separation, actual geometry, tight racks, simultaneous contacts and numerical diagnostics. Aiming never fires. Cosmetic/camera changes never alter physics. Preview placement and coach/demo/replay never mutate the live match or consume execution randomness. Undo restores the full table/rules/session/declaration/settings/seed/chalk state. Old saves migrate. Named drills enter Practice explicitly. Stale/cancelled AI cannot shoot. No backend, tracking, external runtime assets or unrequested unrelated project edits.
 
-For 0.3, camera and table-theme settings must not silently alter physics. Stochastic execution must be reproducible from saved state. Displayed risk and actual shot execution must come from the same model. Do not present gameplay calibration as official APA data.
+## Unfinished and next action
 
-## Unresolved and next action
+Verify publication/Pages and test on Jon's actual phone/tablets. Preserve this checkpoint while calibrating the provisional execution/chalk/skill distributions, rail/pocket/tip/shaft and elevated-shot physics, and AI playing strength. Bounded search has only a next-shot heuristic, not the planned deep pattern tree. Complete higher-level bank/kick/safety behavior, cue-shaft obstruction/double hits, hanging/rattle-back pockets and remaining official referee/compound-foul exceptions. Brand themes are cosmetic approximations, not exact licensed table models. No online multiplayer, team league administration or official APA handicap calculation.
 
-Enable and verify Pages, then test on Jon's actual phone/browser. For 0.3, implement settings/schema migration first, then the shared skill-based execution and mishit/miscue model, chalk integration, cue-ball size/mass physics, 3D renderer, and AI in that order. Preserve the working 0.2 baseline while adding each layer.
-
-Provisional rail/pocket/shaft/tip/massé/jump behavior still needs measured calibration. Cue-shaft obstruction is absent. Kitchen escape is a proxy rather than a true head-string crossing event. Some special rerack, break, referee and compound-foul exceptions remain. No AI or online multiplayer is implemented yet.
-
-Keep the original v0.1 source attachment and this v0.2 repo checkpoint recoverable. Update HANDOFF.md after meaningful changes, then ProjectStatus STATUS.md last.
+Update this handoff when continuation state changes, then the ProjectStatus STATUS.md as the final persistence step. Never describe the entire broader roadmap as complete merely because the major systems are now playable.

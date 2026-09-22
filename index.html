@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#10191d">
 <title>Cue Lab | Pool</title>
-<link rel="stylesheet" href="src/style.css?v=0.2.0">
+<link rel="stylesheet" href="src/style.css?v=0.3.0">
+<link rel="stylesheet" href="src/features.css?v=0.3.0">
 </head>
 <body>
 <div class="app">
  <header class="topbar">
-  <div class="brand"><span class="brand-ball">8</span><div><strong>CUE LAB</strong><small>0.2.0 · YOUR TABLE</small></div></div>
-  <div class="top-actions"><label class="sr-only" for="mode">Game</label><select id="mode" aria-label="Game"></select><button id="newGame" class="quiet">New game</button><button id="help" class="icon" aria-label="Help">?</button><button id="full" class="icon" aria-label="Toggle fullscreen">⛶</button></div>
+  <div class="brand"><span class="brand-ball">8</span><div><strong>CUE LAB</strong><small>0.3.0 · YOUR TABLE</small></div></div>
+  <div class="top-actions"><label class="sr-only" for="mode">Game</label><select id="mode" aria-label="Game"></select><button id="newGame" class="quiet">New game</button><button id="settingsButton" class="quiet" aria-label="Open settings">Settings</button><button id="help" class="icon" aria-label="Help">?</button><button id="full" class="icon" aria-label="Toggle fullscreen">⛶</button></div>
  </header>
  <main>
   <section class="play-area" aria-label="Pool table and scoreboard">
@@ -19,7 +20,9 @@
     <div class="player" id="player1"><strong id="score1">0</strong><div><b id="name1">Player 2</b><small id="detail1">Open table</small></div><span class="player-dot"></span></div>
    </div>
    <div class="table-wrap" id="tableWrap">
+    <canvas id="table3d" hidden aria-label="3D view of the same pool table"></canvas><canvas id="mini3d" width="140" height="88" hidden title="Return to overhead view" aria-label="3D table overview"></canvas>
     <canvas id="table" aria-label="Pool table. Tap or drag to aim. Shooting requires the Shoot button." tabindex="0"></canvas>
+    <div class="view-tools"><button id="viewButton">View: 2D</button><button id="lookButton" hidden>Look</button><button id="coachButton">Coach</button><button id="computerButton" hidden>Computer</button><button id="nextRackButton" class="primary" hidden>Next rack</button><span id="paceBadge" hidden></span></div>
     <div class="table-label" id="tableLabel">9 FT · SIX POCKETS</div><div class="motion-readout" id="motionReadout"></div>
     <div class="choice" id="choice" hidden><b id="choiceText">Take the table?</b><div><button id="take" class="primary">Take table</button><button id="returnShot">Return shot</button></div></div>
    </div>
@@ -54,6 +57,7 @@
       <div class="angle-presets"><button data-elevation="0">Level</button><button data-elevation="15">15°</button><button data-elevation="45">45°</button><button data-elevation="65">65°</button></div>
      </div>
     </div>
+    <div class="stroke-state"><button id="riskButton">Exact stroke</button><button id="chalkButton" hidden>Chalk: Fresh</button></div>
     <div class="shot-dock">
      <div class="tip-warning" id="tipWarning" hidden></div>
      <div class="power"><label class="control-label" for="power">POWER <output id="powerValue">65%</output></label><input id="power" type="range" min="1" max="100" step="1" value="65"><div class="range-labels"><span>Gentle</span><span id="speedEstimate">4.0 m/s</span><span>Break</span></div></div>
@@ -66,15 +70,15 @@
     <div class="page-stack">
      <div class="subpage" data-pane="table:drills"><h2>Try a shot. Then undo.</h2><div class="drills"><button data-drill="draw"><b>Draw</b><small>Pull back</small></button><button data-drill="follow"><b>Follow</b><small>Roll forward</small></button><button data-drill="stun"><b>Stun</b><small>Slide at impact</small></button><button data-drill="english"><b>Rail English</b><small>Change rail exit</small></button><button data-drill="masse"><b>Massé</b><small>Curve the ball</small></button><button data-drill="jump"><b>Jump</b><small>Clear a ball</small></button></div><p class="tiny">Setups for experimenting, not calibrated real-table benchmarks.</p></div>
      <div class="subpage" data-pane="table:arrange" hidden><h2>Build a position.</h2><button id="arrange">Arrange balls</button><div class="practice-actions"><select id="editBall" aria-label="Ball to place"></select><button id="precisionBall">Zoom & place</button><button id="removeBall" class="quiet">Remove</button></div><p class="tiny" id="arrangeHint">Arrange switches to free practice. Select a ball and tap the table, or use Zoom & place for precision.</p></div>
-     <div class="subpage" data-pane="table:saves" hidden><h2>Keep a position.</h2><div class="two-buttons"><button id="saveLayout">Save position</button><button id="loadLayout">Load position</button></div><div class="two-buttons"><button id="export">Export file</button><button id="import">Import file</button><input type="file" id="importFile" accept=".json,application/json" hidden></div><p class="tiny">Save keeps one position in this browser. Export makes a portable backup. Old v0.1 saves still work.</p></div>
+     <div class="subpage" data-pane="table:saves" hidden><h2>Keep a position.</h2><button id="namedDrills">Named practice drills</button><div class="two-buttons"><button id="saveLayout">Save position</button><button id="loadLayout">Load position</button></div><div class="two-buttons"><button id="export">Export file</button><button id="import">Import file</button><input type="file" id="importFile" accept=".json,application/json" hidden></div><p class="tiny">Save keeps one position in this browser. Export makes a portable backup. Old v0.1 saves still work.</p></div>
      <div class="subpage" data-pane="table:settings" hidden><h2>Your table.</h2><label class="setting-line">Cloth<select id="cloth"><option value="normal">Club cloth</option><option value="fast">Fast cloth</option><option value="slow">Slow cloth</option></select></label><label class="check"><input type="checkbox" id="trails" checked> Show the cue ball's actual path</label><label class="check"><input type="checkbox" id="sound"> Ball and cushion sounds</label></div>
     </div>
    </section>
    <section id="tab-match" class="panel" hidden>
     <nav class="subtabs" aria-label="Match controls"><button class="selected" data-page="setup" data-group="match" aria-pressed="true">Players</button><button data-page="rules" data-group="match" aria-pressed="false">Rules</button><button data-page="history" data-group="match" aria-pressed="false">Last shots</button></nav>
     <div class="page-stack">
-     <div class="subpage" data-pane="match:setup"><h2>Share the table.</h2><div class="names"><label>Player 1<input id="editName0" maxlength="24" value="Player 1"></label><label>Player 2<input id="editName1" maxlength="24" value="Player 2"></label></div><label class="setting-line" id="targetRow">Target / rounds<input id="target" type="number" min="1" max="999" value="50"></label><button id="swapPockets" hidden>Swap assigned pockets</button><p class="tiny">Local two-player play. Free practice is solo. No computer opponent yet.</p></div>
-     <div class="subpage text-page" data-pane="match:rules" hidden><h2>Club rules v0.1</h2><p id="rulesBrief" class="rules-brief"></p><div class="pager"><button id="rulesPrev" aria-label="Previous rules page">←</button><span id="rulesPage"></span><button id="rulesNext" aria-label="Next rules page">→</button></div><button id="fullRules" class="text-button">Simulation notes & rule limitations</button></div>
+     <div class="subpage" data-pane="match:setup"><h2>Share the table.</h2><div class="names"><label>Player 1<input id="editName0" maxlength="24" value="Player 1"></label><label>Player 2<input id="editName1" maxlength="24" value="Player 2"></label></div><label class="setting-line" id="targetRow">Target / rounds<input id="target" type="number" min="1" max="999" value="50"></label><button id="swapPockets" hidden>Swap assigned pockets</button><div class="match-actions"><button id="defenseButton">Defense</button><button id="statisticsButton">Scorecard</button><button id="refereeButton">Referee</button><button id="exportStats">Export stats</button><button id="stalemateButton" hidden>Stalemate</button></div></div>
+     <div class="subpage text-page" data-pane="match:rules" hidden><h2>Selected rules</h2><p id="rulesBrief" class="rules-brief"></p><div class="pager"><button id="rulesPrev" aria-label="Previous rules page">←</button><span id="rulesPage"></span><button id="rulesNext" aria-label="Next rules page">→</button></div><button id="fullRules" class="text-button">Simulation notes & rule limitations</button></div>
      <div class="subpage text-page" data-pane="match:history" hidden><h2>Last shots</h2><div id="shotLog" class="shot-log"></div><div class="pager"><button id="logPrev" aria-label="Previous shot history page">←</button><span id="logPage"></span><button id="logNext" aria-label="Next shot history page">→</button></div></div>
     </div>
    </section>
@@ -94,10 +98,41 @@
  </div>
 </dialog>
 <dialog id="helpDialog" aria-labelledby="helpTitle"><div class="dialog-top"><h2 id="helpTitle">How to play</h2><button id="closeHelp" class="icon" aria-label="Close help">×</button></div><div id="helpBody" class="help-body"></div><div class="pager"><button id="helpPrev" aria-label="Previous help page">←</button><span id="helpPage"></span><button id="helpNext" aria-label="Next help page">→</button></div></dialog>
+
+<dialog id="settingsDialog" class="feature-dialog" aria-labelledby="settingsTitle">
+ <div class="dialog-top"><div><h2 id="settingsTitle">Make it your game.</h2><small class="dialog-subtitle">Camera, rules, realism, equipment and more.</small></div><button id="settingsClose" aria-label="Cancel settings">Cancel</button></div>
+ <div class="settings-nav"><label class="sr-only" for="settingsGroup">Settings category</label><select id="settingsGroup"></select><label class="sr-only" for="settingsSearch">Search all settings</label><input id="settingsSearch" type="search" placeholder="Find a setting…" autocomplete="off"></div>
+ <div id="settingsFields" class="settings-fields"></div>
+ <div class="pager"><button id="settingsPrev" aria-label="Previous settings page">←</button><span id="settingsPager"></span><button id="settingsNext" aria-label="Next settings page">→</button></div>
+ <p id="settingsNotice" class="settings-notice" role="status"></p>
+ <div class="dialog-actions"><button id="resetSettings" class="quiet">Reset draft</button><button id="applySettings" class="primary">Apply</button></div>
+</dialog>
+<dialog id="coachDialog" class="feature-dialog" aria-labelledby="coachTitle">
+ <div class="dialog-top"><div><h2 id="coachTitle">Your corner.</h2><small class="dialog-subtitle" id="coachSummary">Analyzing</small></div><button id="coachClose">Close</button></div>
+ <div id="coachBody" class="reader-body"></div>
+ <div class="pager"><button id="coachPrev" aria-label="Previous explanation page">←</button><span id="coachPageLabel"></span><button id="coachNext" aria-label="Next explanation page">→</button></div>
+ <div class="coach-options"><button id="coachAlternative" hidden>Alternative</button><span id="coachClock"></span></div>
+ <div class="dialog-actions"><button id="coachDemo" disabled>Watch demo</button><button id="coachApply" class="primary" disabled>Apply suggestion</button></div>
+ <small class="model-label">A bounded search of this simulator, not a guaranteed shot.</small>
+</dialog>
+<dialog id="drillsDialog" class="feature-dialog" aria-labelledby="drillsTitle">
+ <div class="dialog-top"><h2 id="drillsTitle">Saved drills</h2><button id="drillsClose">Close</button></div>
+ <label for="namedList">Your positions</label><select id="namedList"></select>
+ <div class="dialog-actions"><button id="loadNamed">Load</button><button id="deleteNamed">Delete</button></div>
+ <label for="drillName">Save the current position as</label><input id="drillName" maxlength="40" type="text" placeholder="Name this drill">
+ <button id="saveNamed" class="primary">Save current position</button>
+ <p class="tiny">Up to 20 positions in this browser. Loading a named drill uses free practice. Export a save for a portable backup.</p>
+</dialog>
 <div id="toast" role="status" hidden></div>
-<script src="src/physics.js?v=0.2.0"></script>
-<script src="src/rules.js?v=0.2.0"></script>
-<script src="src/placement.js?v=0.2.0"></script>
-<script src="src/app.js?v=0.2.0"></script>
+<script src="src/physics.js?v=0.3.0"></script>
+<script src="src/rules.js?v=0.3.0"></script>
+<script src="src/settings.js?v=0.3.0"></script>
+<script src="src/execution.js?v=0.3.0"></script>
+<script src="src/apa.js?v=0.3.0"></script>
+<script src="src/session.js?v=0.3.0"></script>
+<script src="src/placement.js?v=0.3.0"></script>
+<script src="src/renderer3d.js?v=0.3.0"></script>
+<script src="src/worker-bundle.js?v=0.3.0"></script>
+<script src="src/app.js?v=0.3.0"></script>
 </body>
 </html>

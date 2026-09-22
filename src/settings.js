@@ -1,0 +1,86 @@
+/* Versioned settings. Every visible option has a runtime consumer. No DOM required. */
+(function(root){'use strict';
+const fields=[];
+const add=(group,key,label,type,value,detail,extra={})=>fields.push({group,key,label,type,value,detail,...extra});
+const pick=(g,k,l,v,opts,d,x={})=>add(g,k,l,'select',v,d,{options:opts,...x});
+const num=(g,k,l,v,min,max,step,d,x={})=>add(g,k,l,'number',v,d,{min,max,step,...x});
+const yes=(g,k,l,v,d,x={})=>add(g,k,l,'boolean',v,d,x);
+pick('Gameplay','style','Gameplay style','arcade',{arcade:'Arcade / classic',simulation:'Simulation',custom:'Custom'},'Arcade delivers exactly your selected stroke with chalk and miscues off. Simulation adds modeled human delivery variation and tip friction. Custom preserves your individual choices.');
+yes('Gameplay','execution','Human execution variation',false,'Vary actual aim, power, contact point and elevation around your selected stroke. Player skill controls the spread. This is a game model, not measured APA performance.');
+yes('Gameplay','miscues','Physical tip-slip miscues',false,'Enable the modeled chalk/tip friction limit. An off-center impact may slip. Turning this off does not guarantee that a ball will go into a pocket.');
+pick('Gameplay','riskDisplay','Pre-shot risk display','simple',{off:'Off',simple:'Compact',detailed:'Detailed'},'Displays the chance of meaningful stroke error or tip slip in the same discrete probability model used by Shoot. Tap for the categories and assumptions; it is not a measured real-world probability.');
+pick('Players','opponent','Play against','human',{human:'Local second player',computer:'Computer',watch:'Computer vs computer'},'Player 2 is the computer in Computer mode. Watch lets both sides play. Practice always stays under your control.',{restart:true});
+num('Players','skill1','Player 1 skill (8-ball scale)',4,2,7,1,'APA-style 2 through 7 is a playing-strength profile, not an official APA handicap calculation.',{restart:true});
+num('Players','skill2','Player 2 / computer skill',4,2,7,1,'Lower levels have wider stroke errors and simpler shot selection. Higher levels evaluate more options. Profiles are provisional, not proven APA equivalents.',{restart:true});
+num('Players','skill9a','Player 1 APA 9-ball handicap',4,1,9,1,'APA 9-ball uses levels 1 through 9 and a point target, separately from the 8-ball playing-strength profile.',{restart:true});
+num('Players','skill9b','Player 2 APA 9-ball handicap',4,1,9,1,'Sets the second player\'s official point-target lookup. Execution strength is separately selected above.',{restart:true});
+pick('Players','aiPace','Computer pause before shooting','natural',{quick:'Quick',natural:'Natural',slow:'Slow'},'Adds a presentation pause after analysis. It does not change the physics, search accuracy or difficulty.');
+pick('Players','aiSearch','Computer analysis budget','balanced',{quick:'Quick',balanced:'Balanced',deep:'Deep'},'Sets a bounded off-thread search budget. More time can improve choices. Deep search is not a guarantee of the globally best shot.');
+pick('Match','rules','Rules preset','club',{club:'Club rules',apa:'APA 8 / 9-ball'},'APA applies only to 8-ball and 9-ball. Other games retain Club rules. APA support is documented in the rules notes, including remaining exceptions.',{restart:true});
+yes('Match','handicap','APA handicap race',true,'Use the official 8-ball Games Must Win chart or 9-ball Points Required chart. Turning this off uses the custom rack race or point target.',{restart:true});
+num('Match','race','Custom rack race',1,1,15,1,'Racks needed to win when not using the APA handicap chart. Straight pool and three-ball retain their own point / round targets.',{restart:true});
+num('Match','points9','Custom APA 9-ball target',31,5,150,1,'Used only when the APA 9-ball handicap chart is turned off.',{restart:true});
+pick('Match','firstBreak','First break','player1',{player1:'Player 1',random:'Random draw',lag:'Play a lag'},'Play lag uses the real cloth and rail model: send your ball to the far rail and back near the head rail. The lag is played sequentially in this local game.',{restart:true});
+pick('Match','breakOrder','Break order after first rack','winner',{winner:'Winner breaks',alternate:'Alternate'},'APA presets always use winner breaks. This choice applies to Club rack races.',{restart:true});
+yes('Match','autoNext','Automatically start next rack',false,'After a result pause, start the next rack when the match is not over. Turn off to study results first.');
+pick('Camera','camera','Default view','2d',{'2d':'2D overhead',shooter:'3D shooter',elevated:'3D elevated',broadcast:'3D broadcast',auto:'3D automatic'},'2D remains the low-overhead fallback. All cameras display the same physics state. Precision placement always opens its overhead close-up.');
+num('Camera','cameraHeight','Shooter camera height (m)',.28,.10,1.1,.02,'Height above the cloth, independent of cue elevation. A higher viewpoint makes intervening balls easier to see.');
+num('Camera','cameraDistance','Shooter camera distance (m)',.8,.4,2,.05,'Distance behind the cue ball. This is a camera adjustment only.');
+num('Camera','fov','3D field of view',52,35,85,1,'A narrow field resembles a longer camera lens; a wider field shows more table with stronger perspective.');
+yes('Camera','autoFollow','Switch to broadcast during shot',true,'In 3D, show an elevated table-wide view while balls move, then return to the selected camera.');
+pick('Camera','replayCamera','Replay camera','same',{same:'Same as live view','2d':'2D overhead',broadcast:'3D broadcast'},'Replay uses recorded ball states without rescoring or rerolling the executed stroke.');
+yes('Camera','minimap','3D overhead inset',true,'Show a small overhead table while using a perspective camera.');
+num('Camera','orbit','3D viewing offset (degrees)',0,-180,180,5,'Orbit the viewing angle without changing the cue aim. The on-table Look button also allows dragging the camera.');
+pick('Equipment','cueBall','Cue-ball preset','standard',{standard:'Standard 57.15 mm',oversize:'Oversize 60.325 mm',heavy:'Heavy, standard diameter',custom:'Custom diameter and mass'},'Standard matches the object balls. Oversize is larger and heavier: harder draw, more forward momentum after contact, and a different contact height. Heavy keeps the standard diameter but adds mass, also making draw harder and follow easier. Custom separates both properties. Larger does not mean incapable of spin; arbitrary custom density combinations are experimental.',{restart:true});
+num('Equipment','diameter','Custom cue diameter (mm)',57.15,50,64,.025,'Changes contact geometry, rotational inertia, pocket clearance and cloth height. Used only with Custom cue-ball preset.',{restart:true});
+num('Equipment','mass','Custom cue mass (g)',170,120,230,1,'Changes inertia and collision momentum. A heavier cue ball tends to continue forward through contact and is harder to draw back. Used with Custom preset.',{restart:true});
+pick('Equipment','cueLook','Cue appearance','maple',{maple:'Maple',carbon:'Carbon',burgundy:'Burgundy wrap'},'Cosmetic cue finish. It never changes cue mass, deflection or accuracy.');
+pick('Chalk','chalk','Chalk management','off',{realistic:'Friction model',visual:'Visual meter only',off:'Off'},'The friction model lowers the tip-slip threshold as chalk condition declines. Shot-dependent depletion is an explicit provisional model, not a measured chalk brand.');
+yes('Chalk','chalkWarning','Warn when chalk is low',true,'Highlight the Chalk button at low condition. Reminding you to chalk does not spend a coaching timeout.');
+yes('Chalk','autoPracticeChalk','Auto-chalk in practice',true,'Refresh chalk before every practice stroke, leaving matches unaffected.');
+yes('Chalk','autoComputerChalk','Computer remembers to chalk',true,'Refresh the computer\'s tip when low or when its chosen contact point calls for fresh chalk.');
+pick('Chalk','chalkDisplay','Meter style','words',{words:'Fresh / Good / Low',percent:'Percentage'},'Changes only the meter label, not the condition model.');
+pick('Table','tableSize','Playing surface','9',{'7':'7 ft class: 78 × 39 in','8':'8 ft class: 88 × 44 in','9':'9 ft class: 100 × 50 in',custom:'Custom 2:1 surface'},'These are explicit playing-surface presets, not exterior table dimensions or claims that every table brand has identical geometry.',{restart:true});
+num('Table','tableLength','Custom surface length (m)',2.54,1.8,3,.01,'Custom playing surface. Width is half the length. Ball sizes stay unchanged.',{restart:true});
+pick('Table','clothPreset','Cloth response','normal',{normal:'Club',fast:'Fast',slow:'Slow'},'Changes sliding friction, rolling resistance and spin decay. These are illustrative parameter sets, not measured cloth products.',{restart:true});
+num('Table','railBounce','Cushion rebound coefficient',.78,.6,.88,.01,'Advanced physical setting: controls normal rebound before speed and friction effects. The default is the existing model. Not a brand calibration.',{restart:true});
+pick('Appearance','theme','Table design','classic',{classic:'Classic walnut',diamond:'Diamond-inspired dark rails',brunswick:'Brunswick-inspired walnut / gold',rasson:'Rasson-inspired graphite'},'Original stylized themes inspired by broad table appearances. No logos, endorsement or exact licensed models. Themes are cosmetic only.');
+pick('Appearance','felt','Felt color','green',{green:'Club green',blue:'Tournament blue',teal:'Deep teal',burgundy:'Burgundy',gray:'Slate gray',black:'Near black',custom:'Custom'},'Color only. Cloth speed is a separate Table setting.');
+add('Appearance','feltColor','Custom felt color','color','#267b6c','Used when Felt color is Custom. Does not change friction.');
+pick('Appearance','lighting','3D lighting','neutral',{neutral:'Neutral',warm:'Warm room',bright:'Bright tournament'},'Changes lighting intensity and tint without changing physics.');
+yes('Assists','guide','Aiming line',true,'Geometric line of initial aim. It does not predict deflection, swerve or the complete future shot.');
+yes('Assists','ghost','Ghost-ball contact marker',true,'Show the cue-ball position at the first unobstructed geometric object-ball contact.');
+yes('Assists','objectLine','Object-ball direction line',true,'Shows the geometric contact normal, not a guarantee of pocketing under throw or spin.');
+yes('Assists','tangent','Stun tangent reference',false,'Shows the perpendicular reference direction at contact. Follow, draw, spin and unequal ball sizes can change the actual exit.');
+yes('Assists','trails','Actual cue-ball trail',true,'Draw the path actually traveled, not a predicted result.');
+yes('Assists','frozenHints','Frozen-ball indicator',true,'Mark balls touching a cushion within the simulation tolerance. Does not alter adjudication.');
+yes('Assists','pocketLabels','Pocket letters',true,'Keep A through F labels on the table for calls and coaching.');
+pick('Coaching','timeouts','Timeout allowance','apa',{apa:'APA-style per player',custom:'Custom per rack',unlimited:'Unlimited',off:'Off'},'APA-style: two for skill 2-3, one for skill 4-7. Practice is unlimited. Before the break, advice is free and does not consume a timeout.');
+num('Coaching','timeoutCount','Custom timeouts per rack',2,0,9,1,'Used only for Custom allowance. Counts restore with Undo and reset with a new rack.');
+pick('Coaching','coachType','Timeout help','coach',{coach:'Coach with reasons',aim:'Aim-assist card'},'Both use actual candidate simulations. The coach adds strategic reasons, alternatives and modeled robustness; aim assist emphasizes the stroke setup.');
+pick('Coaching','coachDepth','Analysis budget','balanced',{quick:'Quick',balanced:'Balanced',deep:'Deep'},'Bounded worker search over direct shots, banks, kicks and safeties. Deep is still a limited search, not proof of the best possible move.');
+pick('Coaching','explanation','Explanation length','detailed',{brief:'Brief',detailed:'Detailed'},'Detailed adds cue-ball route, next-ball assessment, scratch risk and limitations. Text is paginated, never scroll-required.');
+yes('Coaching','alternatives','Show alternatives',true,'Provide up to three evaluated choices rather than presenting one as the only correct shot.');
+yes('Coaching','applySuggestion','Allow Apply suggestion',true,'Explicitly copy the recommended controls and optional ball-in-hand placement. It does not shoot or disable your execution model.');
+yes('Coaching','demoAuto','Demonstrate automatically',false,'Play the recommended ideal stroke on a separate ghost world after analysis. Your live position remains unchanged.');
+yes('Coaching','coachSkill','Account for player skill',true,'Test finalists under the configured stroke-error model. A less ambitious but robust shot may be preferred.');
+yes('Rules & pace','allowJump','Allow jump-style elevated strokes',true,'When off, block shots whose modeled initial slate rebound produces significant airborne lift. All cues currently represent a normal playing cue.');
+yes('Rules & pace','allowMasse','Allow massé-style strokes',true,'When off, block high-elevation, off-center strokes. This is a host-house restriction, separate from the game rules.');
+pick('Rules & pace','pace','Shot pace display','off',{off:'Off',guide:'20 / 45 second guidance'},'A non-punitive pacing display. Crossing a guideline does not create a foul or move the cue ball.');
+yes('Rules & pace','timeoutClock','One-minute coaching clock',true,'Starts when analysis is ready, not while the computer is searching. At one minute the clock advises you to resume; it does not secretly take the shot.');
+pick('Quality & audio','quality','3D rendering detail','medium',{low:'Low',medium:'Medium',high:'High'},'Changes ball tessellation and rendering resolution. Physics remains at its fixed timestep.');
+yes('Quality & audio','shadows','3D ball contact shadows',true,'Simple soft contact-shadow meshes under balls. This is not ray-traced room lighting.');
+yes('Quality & audio','sound','Game sounds',false,'Procedural ball, cushion, pocket, cue and chalk sounds. No audio download.');
+num('Quality & audio','volume','Sound volume',.7,0,1,.05,'Master volume for procedural audio.');
+yes('Quality & audio','haptics','Short phone vibrations',false,'Use supported browser vibration feedback for chalking and a completed strike. Unsupported browsers simply omit it.');
+const defaults=Object.fromEntries(fields.map(f=>[f.key,f.value]));
+function normalize(input={}){const s={...defaults};for(const f of fields){const v=input[f.key];if(v===undefined)continue;if(f.type==='boolean'){if(typeof v==='boolean')s[f.key]=v;}else if(f.type==='select'){if(Object.hasOwn(f.options,v))s[f.key]=v;}else if(f.type==='color'){if(typeof v==='string'&&/^#[0-9a-f]{6}$/i.test(v))s[f.key]=v;}else if(Number.isFinite(v)){const clamped=Math.max(f.min,Math.min(f.max,v));s[f.key]=f.step===1?Math.round(clamped):clamped;}}return s;}
+function valid(input){if(!input||typeof input!=='object'||Array.isArray(input))return false;const norm=normalize(input);return fields.every(f=>Object.hasOwn(input,f.key))&&Object.entries(input).every(([k,v])=>Object.hasOwn(norm,k)&&norm[k]===v); }
+function preset(s,name){const o=normalize(s);o.style=name;if(name==='arcade'){o.execution=false;o.miscues=false;o.chalk='off';o.cueBall='standard';}else if(name==='simulation'){o.execution=true;o.miscues=true;o.chalk='realistic';}return o;}
+function equipment(s){if(s.cueBall==='oversize')return {diameter:.060325,mass:.17*(.060325/.05715)**3};if(s.cueBall==='heavy')return {diameter:.05715,mass:.2};if(s.cueBall==='custom')return {diameter:s.diameter/1000,mass:s.mass/1000};return {diameter:.05715,mass:.17};}
+function geometry(s){const len=s.tableSize==='7'?1.9812:s.tableSize==='8'?2.2352:s.tableSize==='9'?2.54:s.tableLength;return {tableLength:len,tableWidth:len/2};}
+function cloth(s){const v={normal:[.20,.011,8],fast:[.17,.0075,7],slow:[.23,.017,10]}[s.clothPreset];return {slide:v[0],roll:v[1],spin:v[2],railRestitution:s.railBounce};}
+const felt=s=>s.felt==='custom'?s.feltColor:({green:'#267b6c',blue:'#226faa',teal:'#18616b',burgundy:'#752e42',gray:'#606a71',black:'#273335'}[s.felt]);
+const api={fields,defaults,normalize,valid,preset,equipment,geometry,cloth,felt,groups:[...new Set(fields.map(f=>f.group))]};
+if(typeof module!=='undefined'&&module.exports)module.exports=api;root.CueSettings=api;
+})(typeof globalThis!=='undefined'?globalThis:this);

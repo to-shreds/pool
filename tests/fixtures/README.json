@@ -1,0 +1,14 @@
+[
+  {
+    "version": "0.1",
+    "source_html_sha256": "ee02d8b03d31dddd9efa73ad7a497bbbe50f2b6fc98dd337aa92a7a486874286",
+    "fixture": "tests/fixtures/save-v0.1.json",
+    "method": "Captured from that exact earlier standalone app via CueLab.snapshot after Draw preset."
+  },
+  {
+    "version": "0.2",
+    "source_html_sha256": "d8f36edac2c5128a876165d436368399559c0575e046911f67ec20cc70b79ca9",
+    "fixture": "tests/fixtures/save-v0.2.json",
+    "method": "Captured from that exact earlier standalone app via CueLab.snapshot after Draw preset."
+  }
+]

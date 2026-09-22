@@ -28,7 +28,8 @@ const notes={
 };
 function group(id){return id<8?'solids':id>8?'stripes':null;}
 function objects(w){return w.balls.filter(b=>b.active&&b.id>0);}
-function rackInterferes(b){
+function rackInterferes(b,t={L,W}){
+ const {L,W}=t;
  // Rack outline (including frame clearance), expanded by one ball radius.
  const x0=.75*L-1.2*R,x1=.75*L+4*Math.sqrt(3)*R+1.2*R;
  if(b.p[0]<x0-R||b.p[0]>x1+R)return false;
@@ -36,27 +37,28 @@ function rackInterferes(b){
  return Math.abs(b.p[1]-W/2)<half;
 }
 function rerackStraight(w){
+ const t=w.table??{L,W};const {L:len,W:wid}=t;
  const live=objects(w),cue=w.get(0),last=live[0];
- const ci=cue&&cue.active&&rackInterferes(cue),li=last&&rackInterferes(last);
+ const ci=cue&&cue.active&&rackInterferes(cue,t),li=last&&rackInterferes(last,t);
  let full=!last||(ci&&li),hand=null,desc='Fourteen reracked; the break ball stays in position.';
  const ids=w.balls.filter(b=>b.id>0).map(b=>b.id);
  while(ids.length<15){for(let n=1;n<=15;n++)if(!ids.includes(n)){ids.push(n);break;}}
  if(full){
-  const pos=rackPositions(15);
+  const pos=rackPositions(15,t);
   w.balls=[cue,...ids.map((id,i)=>ball(id,...pos[i]))];
-  if(ci){cue.active=false;spot(w,0,L*.25,W/2);hand='kitchen';}
+  if(ci){cue.active=false;spot(w,0,len*.25,wid/2);hand='kitchen';}
   desc='All fifteen reracked.'+(hand?' Cue ball in the kitchen.':'');
  }else{
   if(li){
-   const hx=L*.25;const blocked=cue.active&&Math.hypot(cue.p[0]-hx,cue.p[1]-W/2)<2*R+.002;
-   last.p=[blocked?L/2:hx,W/2,R];desc='Break ball moved to the '+(blocked?'center':'head')+' spot.';
+   const hx=len*.25;const blocked=cue.active&&Math.hypot(cue.p[0]-hx,cue.p[1]-wid/2)<2*R+.002;
+   last.p=[blocked?len/2:hx,wid/2,R];desc='Break ball moved to the '+(blocked?'center':'head')+' spot.';
   }
   if(ci){
-   if(last.p[0]>=L/4){hand='kitchen';cue.active=false;spot(w,0,L/4,W/2);}
-   else{const blocked=Math.hypot(last.p[0]-L/4,last.p[1]-W/2)<2*R+.002;
-    cue.active=false;spot(w,0,blocked?L/2:L/4,W/2);}
+   if(last.p[0]>=len/4){hand='kitchen';cue.active=false;spot(w,0,len/4,wid/2);}
+   else{const blocked=Math.hypot(last.p[0]-len/4,last.p[1]-wid/2)<2*R+.002;
+    cue.active=false;spot(w,0,blocked?len/2:len/4,wid/2);}
   }
-  const pos=rackPositions(15).slice(1),others=ids.filter(id=>id!==last.id);
+  const pos=rackPositions(15,t).slice(1),others=ids.filter(id=>id!==last.id);
   w.balls=[cue,last,...others.map((id,i)=>ball(id,...pos[i]))];
  }
  return {hand,desc};
@@ -70,10 +72,10 @@ class Rules{
   this.break=true;this.shots=0;this.winner=null;this.ballInHand='kitchen';this.pushAvailable=false;
   this.choice=null;this.pockets=options.pockets||[2,3];this.strokes=0;this.roundScores=[[],[]];
   this.log=[];this.message=mode==='practice'?'Free practice. Set up a shot.':'Player 1 to break. Cue ball can be placed in the kitchen.';
-  if(mode==='practice')this.ballInHand=null;
+  if(mode==='practice'){this.ballInHand=null;this.break=false;}
  }
  snapshot(){return clone(this);}
- static from(s){const r=new Rules(s.mode);Object.assign(r,clone(s));return r;}
+ static from(s){if(root.CueAPA&&['apa8','apa9'].includes(s.mode))return root.CueAPA.Rules.from(s);const r=new Rules(s.mode);Object.assign(r,clone(s));return r;}
  needsCall(){return ['8ball','straight','10ball','banks'].includes(this.mode)&&(!this.break||this.mode==='straight');}
  name(){return this.players[this.turn];}
  start(w,options={}){
@@ -83,7 +85,7 @@ class Rules{
  logMessage(text){this.message=text;this.log.unshift(text);this.log=this.log.slice(0,30);}
  switchTurn(){this.runs[this.turn]=0;this.turn=1-this.turn;}
  win(player,text){this.winner=player;this.logMessage((player==='draw'?'Draw':this.players[player]+' wins')+'. '+text);}
- giveHand(w,area){this.ballInHand=area;const cue=w.get(0);if(!cue.active){spot(w,0,area==='kitchen'?L*.25:L*.3,W/2);}}
+ giveHand(w,area){const {L,W}=w.table??{L:P.L,W:P.W};this.ballInHand=area;const cue=w.get(0);if(!cue.active){spot(w,0,area==='kitchen'?L*.25:L*.3,W/2);}}
  respot(w,ids){for(const id of [...new Set(ids)].sort((a,b)=>a-b))if(id>0)spot(w,id);}
  flush(w){this.respot(w,this.pendingSpot);this.pendingSpot=[];}
  scoreBall(id,owner){
@@ -93,14 +95,16 @@ class Rules{
  penaltyBall(player){if(this.scored[player].length){this.pendingSpot.push(this.scored[player].pop());this.scores[player]--;}
   else this.owed[player]++;}
  choose(w,take){
+  const {L,W}=w.table??{L:P.L,W:P.W};
   if(!this.choice)return;
   const c=this.choice;this.choice=null;
   if(c.type==='straightBreak'){
-   if(!take){w.balls=rack('straight');this.turn=c.shooter;this.break=true;this.ballInHand='kitchen';this.logMessage(this.name()+' must rebreak.');}
+   if(!take){w.balls=rack('straight',w.table);this.turn=c.shooter;this.break=true;this.ballInHand='kitchen';this.logMessage(this.name()+' must rebreak.');}
    else{this.turn=1-c.shooter;this.break=false;this.logMessage(this.name()+' accepts the table.');}
   }else{this.turn=take?1-c.shooter:c.shooter;this.logMessage(this.name()+(take?' takes the table.':' has the shot returned.'));}
  }
  finish(w,pre){
+  const {L,W}=w.table??{L:P.L,W:P.W};
   const me=pre.player,other=1-me,o=pre.options,mode=this.mode,ev=w.events;
   this.shots++;this.ballInHand=null;this.pushAvailable=false;
   const pots=ev.filter(e=>e.type==='pocket'&&e.id>0),off=ev.filter(e=>e.type==='off'),scratched=ev.some(e=>(e.type==='pocket'||e.type==='off')&&e.id===0);
@@ -145,7 +149,7 @@ class Rules{
     const result=this.players[me]+' cleared in '+this.strokes+' strokes.';this.strokes=0;
     if(this.roundScores[0].length>=this.target&&this.roundScores[1].length>=this.target){
      this.win(this.scores[0]===this.scores[1]?'draw':this.scores[0]<this.scores[1]?0:1,result);return;}
-    this.switchTurn();w.balls=rack('3ball');this.break=true;this.ballInHand='kitchen';this.logMessage(result+' '+this.name()+' starts a fresh rack.');
+    this.switchTurn();w.balls=rack('3ball',w.table);this.break=true;this.ballInHand='kitchen';this.logMessage(result+' '+this.name()+' starts a fresh rack.');
    }else this.logMessage(this.strokes+' stroke'+(this.strokes===1?'':'s')+(penalty?' (includes one foul penalty).':'.'));
    return;
   }
@@ -191,7 +195,7 @@ class Rules{
    if(foul){
     this.scores[me]-=breakFoul?2:1;
     if(this.fouls[me]>=3&&!breakFoul){
-     this.scores[me]-=15;this.fouls[me]=0;w.balls=rack('straight');this.break=true;this.ballInHand='kitchen';this.runs[me]=0;
+     this.scores[me]-=15;this.fouls[me]=0;w.balls=rack('straight',w.table);this.break=true;this.ballInHand='kitchen';this.runs[me]=0;
      this.logMessage('Three consecutive fouls: 16 points deducted on this shot. '+this.name()+' must break a new rack.');return;
     }
     this.switchTurn();if(scratched)this.giveHand(w,'kitchen');

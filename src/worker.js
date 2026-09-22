@@ -1,0 +1,2 @@
+/* Build embeds physics/rules/APA/execution/coach ahead of this handler. */
+self.onmessage=e=>{const {id,action,input,candidate}=e.data;try{const result=action==='demo'?CueCoach.demonstration(input,candidate):action==='lag'?CueCoach.lag(input):action==='stalemate'?CueCoach.stalemate(input,progress=>self.postMessage({id,progress})):CueCoach.solve(input,progress=>self.postMessage({id,progress}));self.postMessage({id,result});}catch(err){self.postMessage({id,error:String(err.message||err)});}};

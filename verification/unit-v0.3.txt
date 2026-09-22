@@ -1,0 +1,1288 @@
+TAP version 13
+# Subtest: official 8-ball race chart is asymmetric and round-trips every pairing
+ok 1 - official 8-ball race chart is asymmetric and round-trips every pairing
+  ---
+  duration_ms: 2.270204
+  type: 'test'
+  ...
+# Subtest: APA 9-ball official point targets include all nine levels
+ok 2 - APA 9-ball official point targets include all nine levels
+  ---
+  duration_ms: 0.234768
+  type: 'test'
+  ...
+# Subtest: APA 8-ball does not require called routine shots
+ok 3 - APA 8-ball does not require called routine shots
+  ---
+  duration_ms: 3.3393
+  type: 'test'
+  ...
+# Subtest: APA 8-ball assigns the sole category pocketed on the break
+ok 4 - APA 8-ball assigns the sole category pocketed on the break
+  ---
+  duration_ms: 0.618466
+  type: 'test'
+  ...
+# Subtest: both categories potted on break leave table open
+ok 5 - both categories potted on break leave table open
+  ---
+  duration_ms: 0.583115
+  type: 'test'
+  ...
+# Subtest: both categories pocketed on an open-table later stroke leave it open
+ok 6 - both categories pocketed on an open-table later stroke leave it open
+  ---
+  duration_ms: 0.512139
+  type: 'test'
+  ...
+# Subtest: APA 8-ball eight on a legal break wins
+ok 7 - APA 8-ball eight on a legal break wins
+  ---
+  duration_ms: 0.425891
+  type: 'test'
+  ...
+# Subtest: APA 8-ball eight plus cue scratch on break loses
+ok 8 - APA 8-ball eight plus cue scratch on break loses
+  ---
+  duration_ms: 0.49235
+  type: 'test'
+  ...
+# Subtest: a dry illegal break reracks for the same shooter
+ok 9 - a dry illegal break reracks for the same shooter
+  ---
+  duration_ms: 1.003588
+  type: 'test'
+  ...
+# Subtest: a scratched illegal break after rack contact passes the rebreak
+ok 10 - a scratched illegal break after rack contact passes the rebreak
+  ---
+  duration_ms: 0.822359
+  type: 'test'
+  ...
+# Subtest: no rack contact means no pre-break foul, even if cue scratches
+ok 11 - no rack contact means no pre-break foul, even if cue scratches
+  ---
+  duration_ms: 0.653128
+  type: 'test'
+  ...
+# Subtest: APA 8-ball first or second row contact is permitted on break
+ok 12 - APA 8-ball first or second row contact is permitted on break
+  ---
+  duration_ms: 0.735139
+  type: 'test'
+  ...
+# Subtest: APA 9-ball requires the one ball first on break
+ok 13 - APA 9-ball requires the one ball first on break
+  ---
+  duration_ms: 0.416597
+  type: 'test'
+  ...
+# Subtest: rail-first break is reracked even if a ball drops
+ok 14 - rail-first break is reracked even if a ball drops
+  ---
+  duration_ms: 0.588873
+  type: 'test'
+  ...
+# Subtest: dry legal break counts distinct object balls to rails
+ok 15 - dry legal break counts distinct object balls to rails
+  ---
+  duration_ms: 1.242662
+  type: 'test'
+  ...
+# Subtest: legal-break scratch grants kitchen in APA8
+ok 16 - legal-break scratch grants kitchen in APA8
+  ---
+  duration_ms: 0.573479
+  type: 'test'
+  ...
+# Subtest: actual first-contact coordinates enforce the APA kitchen rule
+ok 17 - actual first-contact coordinates enforce the APA kitchen rule
+  ---
+  duration_ms: 0.577636
+  type: 'test'
+  ...
+# Subtest: a preceding cue rail does not legalize first contact inside the APA kitchen
+ok 18 - a preceding cue rail does not legalize first contact inside the APA kitchen
+  ---
+  duration_ms: 0.329378
+  type: 'test'
+  ...
+# Subtest: first-contact point on the head string is outside for APA kitchen play
+ok 19 - first-contact point on the head string is outside for APA kitchen play
+  ---
+  duration_ms: 0.41817
+  type: 'test'
+  ...
+# Subtest: marked eight after clearing group wins
+ok 20 - marked eight after clearing group wins
+  ---
+  duration_ms: 0.231513
+  type: 'test'
+  ...
+# Subtest: an unmarked eight loses
+ok 21 - an unmarked eight loses
+  ---
+  duration_ms: 0.186907
+  type: 'test'
+  ...
+# Subtest: pocket marker persists across a missed eight attempt
+ok 22 - pocket marker persists across a missed eight attempt
+  ---
+  duration_ms: 0.203932
+  type: 'test'
+  ...
+# Subtest: scratch while on the eight loses even if the eight stays up
+ok 23 - scratch while on the eight loses even if the eight stays up
+  ---
+  duration_ms: 0.226626
+  type: 'test'
+  ...
+# Subtest: missing the eight without scratch is a foul, not loss
+ok 24 - missing the eight without scratch is a foul, not loss
+  ---
+  duration_ms: 0.230161
+  type: 'test'
+  ...
+# Subtest: last group ball and eight on one stroke loses
+ok 25 - last group ball and eight on one stroke loses
+  ---
+  duration_ms: 0.258313
+  type: 'test'
+  ...
+# Subtest: APA defense declaration does not end a legally scoring inning
+ok 26 - APA defense declaration does not end a legally scoring inning
+  ---
+  duration_ms: 0.486471
+  type: 'test'
+  ...
+# Subtest: only the opponent group pocketed ends the APA8 inning
+ok 27 - only the opponent group pocketed ends the APA8 inning
+  ---
+  duration_ms: 0.524818
+  type: 'test'
+  ...
+# Subtest: APA8 off-table object ball is not an automatic foul
+ok 28 - APA8 off-table object ball is not an automatic foul
+  ---
+  duration_ms: 0.595483
+  type: 'test'
+  ...
+# Subtest: APA8 off-table balls wait during a scoring inning
+ok 29 - APA8 off-table balls wait during a scoring inning
+  ---
+  duration_ms: 1.516217
+  type: 'test'
+  ...
+# Subtest: APA8 own off-table ball is spotted when all other group balls are gone
+ok 30 - APA8 own off-table ball is spotted when all other group balls are gone
+  ---
+  duration_ms: 0.378561
+  type: 'test'
+  ...
+# Subtest: off-table eight loses regardless of otherwise legal contact
+ok 31 - off-table eight loses regardless of otherwise legal contact
+  ---
+  duration_ms: 0.800206
+  type: 'test'
+  ...
+# Subtest: off-table APA9 object ball is spotted immediately without an automatic foul
+ok 32 - off-table APA9 object ball is spotted immediately without an automatic foul
+  ---
+  duration_ms: 0.35108
+  type: 'test'
+  ...
+# Subtest: APA9 early nine ends a rack but not an unfinished point match
+ok 33 - APA9 early nine ends a rack but not an unfinished point match
+  ---
+  duration_ms: 1.454576
+  type: 'test'
+  ...
+# Subtest: APA9 counts ordinary balls one and nine two
+ok 34 - APA9 counts ordinary balls one and nine two
+  ---
+  duration_ms: 0.272334
+  type: 'test'
+  ...
+# Subtest: APA9 caps points at the exact match target
+ok 35 - APA9 caps points at the exact match target
+  ---
+  duration_ms: 0.343279
+  type: 'test'
+  ...
+# Subtest: APA9 foul pots are dead but nine is spotted
+ok 36 - APA9 foul pots are dead but nine is spotted
+  ---
+  duration_ms: 0.717673
+  type: 'test'
+  ...
+# Subtest: APA9 push-out flag cannot bypass a required legal contact
+ok 37 - APA9 push-out flag cannot bypass a required legal contact
+  ---
+  duration_ms: 0.167829
+  type: 'test'
+  ...
+# Subtest: APA9 does not inherit the Club three-consecutive-foul loss
+ok 38 - APA9 does not inherit the Club three-consecutive-foul loss
+  ---
+  duration_ms: 0.13486
+  type: 'test'
+  ...
+# Subtest: complete innings follow the original lag loser, not the current rack breaker
+ok 39 - complete innings follow the original lag loser, not the current rack breaker
+  ---
+  duration_ms: 0.217632
+  type: 'test'
+  ...
+# Subtest: frozen object return to its same rail alone is not enough
+ok 40 - frozen object return to its same rail alone is not enough
+  ---
+  duration_ms: 0.194618
+  type: 'test'
+  ...
+# Subtest: cue rail after contacting frozen object is enough
+ok 41 - cue rail after contacting frozen object is enough
+  ---
+  duration_ms: 0.127639
+  type: 'test'
+  ...
+# Subtest: simultaneous cue contact with frozen ball and its rail needs a different rail
+ok 42 - simultaneous cue contact with frozen ball and its rail needs a different rail
+  ---
+  duration_ms: 0.133728
+  type: 'test'
+  ...
+# Subtest: frozen ball kiss into another ball can qualify a later same-rail contact
+ok 43 - frozen ball kiss into another ball can qualify a later same-rail contact
+  ---
+  duration_ms: 0.123863
+  type: 'test'
+  ...
+# Subtest: APA ball spotting uses ascending numerical order and touching centers
+ok 44 - APA ball spotting uses ascending numerical order and touching centers
+  ---
+  duration_ms: 0.249419
+  type: 'test'
+  ...
+# Subtest: APA8 match counts racks and resets timeouts without resetting wins
+ok 45 - APA8 match counts racks and resets timeouts without resetting wins
+  ---
+  duration_ms: 1.320137
+  type: 'test'
+  ...
+# Subtest: APA9 match keeps points across rack transitions
+ok 46 - APA9 match keeps points across rack transitions
+  ---
+  duration_ms: 0.422997
+  type: 'test'
+  ...
+# Subtest: different masses obey the analytic head-on elastic collision
+ok 47 - different masses obey the analytic head-on elastic collision
+  ---
+  duration_ms: 3.039475
+  type: 'test'
+  ...
+# Subtest: unequal spheres conserve momentum and kinetic energy in free elastic contact
+ok 48 - unequal spheres conserve momentum and kinetic energy in free elastic contact
+  ---
+  duration_ms: 0.361466
+  type: 'test'
+  ...
+# Subtest: heavier same-size cue retains more forward motion after a head-on collision
+ok 49 - heavier same-size cue retains more forward motion after a head-on collision
+  ---
+  duration_ms: 0.399542
+  type: 'test'
+  ...
+# Subtest: larger same-mass sphere has greater inertia and less angular acceleration at fixed normalized impact
+ok 50 - larger same-mass sphere has greater inertia and less angular acceleration at fixed normalized impact
+  ---
+  duration_ms: 0.17533
+  type: 'test'
+  ...
+# Subtest: slide-to-roll relationship uses each radius
+ok 51 - slide-to-roll relationship uses each radius
+  ---
+  duration_ms: 0.406262
+  type: 'test'
+  ...
+# Subtest: slate response is passive for all equipment presets
+ok 52 - slate response is passive for all equipment presets
+  ---
+  duration_ms: 0.555794
+  type: 'test'
+  ...
+# Subtest: cue-ball strike consumes actual equipment inertia, not a cosmetic size field
+ok 53 - cue-ball strike consumes actual equipment inertia, not a cosmetic size field
+  ---
+  duration_ms: 1.183294
+  type: 'test'
+  ...
+# Subtest: equipment survives snapshots, zero-velocity placement, and restoration
+ok 54 - equipment survives snapshots, zero-velocity placement, and restoration
+  ---
+  duration_ms: 0.813546
+  type: 'test'
+  ...
+# Subtest: placement validates actual cue-ball radius against rails and object balls
+ok 55 - placement validates actual cue-ball radius against rails and object balls
+  ---
+  duration_ms: 1.39725
+  type: 'test'
+  ...
+# Subtest: invalid equipment does not mutate the original ball
+ok 56 - invalid equipment does not mutate the original ball
+  ---
+  duration_ms: 1.857443
+  type: 'test'
+  ...
+# Subtest: 7-foot table has actual independent geometry, not scaled balls
+ok 57 - 7-foot table has actual independent geometry, not scaled balls
+  ---
+  duration_ms: 0.783581
+  type: 'test'
+  ...
+# Subtest: 8-foot table has actual independent geometry, not scaled balls
+ok 58 - 8-foot table has actual independent geometry, not scaled balls
+  ---
+  duration_ms: 0.241048
+  type: 'test'
+  ...
+# Subtest: 9-foot table has actual independent geometry, not scaled balls
+ok 59 - 9-foot table has actual independent geometry, not scaled balls
+  ---
+  duration_ms: 0.22287
+  type: 'test'
+  ...
+# Subtest: two tables can be simulated independently in one process
+ok 60 - two tables can be simulated independently in one process
+  ---
+  duration_ms: 158.805755
+  type: 'test'
+  ...
+# Subtest: swept unequal-ball collision does not tunnel
+ok 61 - swept unequal-ball collision does not tunnel
+  ---
+  duration_ms: 1.400226
+  type: 'test'
+  ...
+# Subtest: frozen rail detector uses cushion-nose geometry
+ok 62 - frozen rail detector uses cushion-nose geometry
+  ---
+  duration_ms: 0.407164
+  type: 'test'
+  ...
+# Subtest: slow touching constraints dissipate rather than create energy
+ok 63 - slow touching constraints dissipate rather than create energy
+  ---
+  duration_ms: 0.584736
+  type: 'test'
+  ...
+# Subtest: a small cue-ball break with two object balls jammed in corner jaws settles without event-cap skipping
+ok 64 - a small cue-ball break with two object balls jammed in corner jaws settles without event-cap skipping
+  ---
+  duration_ms: 738.041968
+  type: 'test'
+  ...
+# Subtest: center strike has no torque
+ok 65 - center strike has no torque
+  ---
+  duration_ms: 1.347357
+  type: 'test'
+  ...
+# Subtest: follow and draw spin have opposite physical signs
+ok 66 - follow and draw spin have opposite physical signs
+  ---
+  duration_ms: 0.418441
+  type: 'test'
+  ...
+# Subtest: sliding transitions analytically to 5/7 speed
+ok 67 - sliding transitions analytically to 5/7 speed
+  ---
+  duration_ms: 0.199475
+  type: 'test'
+  ...
+# Subtest: sliding friction removes total kinetic energy
+ok 68 - sliding friction removes total kinetic energy
+  ---
+  duration_ms: 0.142651
+  type: 'test'
+  ...
+# Subtest: roll friction stops rather than reverses a slow ball
+ok 69 - roll friction stops rather than reverses a slow ball
+  ---
+  duration_ms: 0.114169
+  type: 'test'
+  ...
+# Subtest: sidespin decays without changing a flat rolling direction
+ok 70 - sidespin decays without changing a flat rolling direction
+  ---
+  duration_ms: 17.586255
+  type: 'test'
+  ...
+# Subtest: no cloth drag in flight
+ok 71 - no cloth drag in flight
+  ---
+  duration_ms: 0.943799
+  type: 'test'
+  ...
+# Subtest: gravity follows a ballistic parabola above the cloth
+ok 72 - gravity follows a ballistic parabola above the cloth
+  ---
+  duration_ms: 0.328387
+  type: 'test'
+  ...
+# Subtest: elevated cue impulse points down; slate rebound produces lift
+ok 73 - elevated cue impulse points down; slate rebound produces lift
+  ---
+  duration_ms: 1.272175
+  type: 'test'
+  ...
+# Subtest: low-speed cloth impact does not bounce indefinitely
+ok 74 - low-speed cloth impact does not bounce indefinitely
+  ---
+  duration_ms: 0.499831
+  type: 'test'
+  ...
+# Subtest: slate contact is passive
+ok 75 - slate contact is passive
+  ---
+  duration_ms: 0.197904
+  type: 'test'
+  ...
+# Subtest: legal contact and miscue region are distinct
+ok 76 - legal contact and miscue region are distinct
+  ---
+  duration_ms: 0.169941
+  type: 'test'
+  ...
+# Subtest: the user can select near-edge contact without infinite spin
+ok 77 - the user can select near-edge contact without infinite spin
+  ---
+  duration_ms: 0.100159
+  type: 'test'
+  ...
+# Subtest: cue tip under cloth is rejected
+ok 78 - cue tip under cloth is rejected
+  ---
+  duration_ms: 0.177113
+  type: 'test'
+  ...
+# Subtest: a moving table cannot receive another stroke
+ok 79 - a moving table cannot receive another stroke
+  ---
+  duration_ms: 0.147299
+  type: 'test'
+  ...
+# Subtest: head-on elastic collision swaps linear velocity
+ok 80 - head-on elastic collision swaps linear velocity
+  ---
+  duration_ms: 0.218604
+  type: 'test'
+  ...
+# Subtest: oblique elastic collision conserves linear momentum and energy
+ok 81 - oblique elastic collision conserves linear momentum and energy
+  ---
+  duration_ms: 0.142361
+  type: 'test'
+  ...
+# Subtest: ball friction produces throw and does not add energy
+ok 82 - ball friction produces throw and does not add energy
+  ---
+  duration_ms: 0.106588
+  type: 'test'
+  ...
+# Subtest: simultaneous symmetric contacts stay symmetric
+ok 83 - simultaneous symmetric contacts stay symmetric
+  ---
+  duration_ms: 0.440753
+  type: 'test'
+  ...
+# Subtest: swept collision detection catches a 40 m/s impact
+ok 84 - swept collision detection catches a 40 m/s impact
+  ---
+  duration_ms: 0.763431
+  type: 'test'
+  ...
+# Subtest: a ball initially touching another can be struck without tunneling
+ok 85 - a ball initially touching another can be struck without tunneling
+  ---
+  duration_ms: 0.282359
+  type: 'test'
+  ...
+# Subtest: identical physics steps are deterministic across display batching
+ok 86 - identical physics steps are deterministic across display batching
+  ---
+  duration_ms: 288.207769
+  type: 'test'
+  ...
+# Subtest: orientation remains a unit quaternion
+ok 87 - orientation remains a unit quaternion
+  ---
+  duration_ms: 16.359627
+  type: 'test'
+  ...
+# Subtest: backspin reverses the cue ball after object-ball contact
+ok 88 - backspin reverses the cue ball after object-ball contact
+  ---
+  duration_ms: 5.733608
+  type: 'test'
+  ...
+# Subtest: follow advances the cue ball after object-ball contact
+ok 89 - follow advances the cue ball after object-ball contact
+  ---
+  duration_ms: 9.894615
+  type: 'test'
+  ...
+# Subtest: elevated sidespin curves without an artificial lateral force
+ok 90 - elevated sidespin curves without an artificial lateral force
+  ---
+  duration_ms: 3.149547
+  type: 'test'
+  ...
+# Subtest: jump shot clears a ball instead of falsely colliding in 2D
+ok 91 - jump shot clears a ball instead of falsely colliding in 2D
+  ---
+  duration_ms: 4.911029
+  type: 'test'
+  ...
+# Subtest: straight rolling ball drops in pocket 0
+ok 92 - straight rolling ball drops in pocket 0
+  ---
+  duration_ms: 0.945892
+  type: 'test'
+  ...
+# Subtest: straight rolling ball drops in pocket 1
+ok 93 - straight rolling ball drops in pocket 1
+  ---
+  duration_ms: 0.734809
+  type: 'test'
+  ...
+# Subtest: straight rolling ball drops in pocket 2
+ok 94 - straight rolling ball drops in pocket 2
+  ---
+  duration_ms: 2.379596
+  type: 'test'
+  ...
+# Subtest: straight rolling ball drops in pocket 3
+ok 95 - straight rolling ball drops in pocket 3
+  ---
+  duration_ms: 0.687599
+  type: 'test'
+  ...
+# Subtest: straight rolling ball drops in pocket 4
+ok 96 - straight rolling ball drops in pocket 4
+  ---
+  duration_ms: 0.680839
+  type: 'test'
+  ...
+# Subtest: straight rolling ball drops in pocket 5
+ok 97 - straight rolling ball drops in pocket 5
+  ---
+  duration_ms: 2.599443
+  type: 'test'
+  ...
+# Subtest: rail English changes rebound direction
+ok 98 - rail English changes rebound direction
+  ---
+  duration_ms: 5.827707
+  type: 'test'
+  ...
+# Subtest: tight 8-ball rack remains stable at rest and breaks into multiple rails
+ok 99 - tight 8-ball rack remains stable at rest and breaks into multiple rails
+  ---
+  duration_ms: 198.02016
+  type: 'test'
+  ...
+# Subtest: a ball above cushion height can leave the table
+ok 100 - a ball above cushion height can leave the table
+  ---
+  duration_ms: 0.422026
+  type: 'test'
+  ...
+# Subtest: placement rejects overlapping balls, off-table positions and outside-kitchen spots
+ok 101 - placement rejects overlapping balls, off-table positions and outside-kitchen spots
+  ---
+  duration_ms: 0.303359
+  type: 'test'
+  ...
+# Subtest: spotting searches past an occupied foot spot
+ok 102 - spotting searches past an occupied foot spot
+  ---
+  duration_ms: 0.329629
+  type: 'test'
+  ...
+# Subtest: invalid timestep is rejected
+ok 103 - invalid timestep is rejected
+  ---
+  duration_ms: 0.474514
+  type: 'test'
+  ...
+# Subtest: passive dynamics do not create energy through a break
+ok 104 - passive dynamics do not create energy through a break
+  ---
+  duration_ms: 276.171511
+  type: 'test'
+  ...
+# Subtest: opening and changing a placement preview does not mutate any world state
+ok 105 - opening and changing a placement preview does not mutate any world state
+  ---
+  duration_ms: 2.279809
+  type: 'test'
+  ...
+# Subtest: default camera magnifies by six and keeps the candidate centered
+ok 106 - default camera magnifies by six and keeps the candidate centered
+  ---
+  duration_ms: 0.223932
+  type: 'test'
+  ...
+# Subtest: default nudge is exactly one millimeter in world units
+ok 107 - default nudge is exactly one millimeter in world units
+  ---
+  duration_ms: 0.257832
+  type: 'test'
+  ...
+# Subtest: five and ten millimeter nudges do not depend on zoom
+ok 108 - five and ten millimeter nudges do not depend on zoom
+  ---
+  duration_ms: 0.268478
+  type: 'test'
+  ...
+# Subtest: screen and table coordinates round-trip at every zoom level
+ok 109 - screen and table coordinates round-trip at every zoom level
+  ---
+  duration_ms: 0.285463
+  type: 'test'
+  ...
+# Subtest: zoom clamps to the available range
+ok 110 - zoom clamps to the available range
+  ---
+  duration_ms: 0.162321
+  type: 'test'
+  ...
+# Subtest: orientation and canvas resize preserve the chosen table position
+ok 111 - orientation and canvas resize preserve the chosen table position
+  ---
+  duration_ms: 0.197342
+  type: 'test'
+  ...
+# Subtest: overlap is rejected without moving the original ball
+ok 112 - overlap is rejected without moving the original ball
+  ---
+  duration_ms: 0.333634
+  type: 'test'
+  ...
+# Subtest: off-cloth and rail-overlapping previews cannot be confirmed
+ok 113 - off-cloth and rail-overlapping previews cannot be confirmed
+  ---
+  duration_ms: 0.393874
+  type: 'test'
+  ...
+# Subtest: kitchen restriction is enforced on the candidate and confirmation
+ok 114 - kitchen restriction is enforced on the candidate and confirmation
+  ---
+  duration_ms: 0.463277
+  type: 'test'
+  ...
+# Subtest: valid confirmation moves only the selected ball and stops its motion
+ok 115 - valid confirmation moves only the selected ball and stops its motion
+  ---
+  duration_ms: 0.212876
+  type: 'test'
+  ...
+# Subtest: original spot reset is still only a preview
+ok 116 - original spot reset is still only a preview
+  ---
+  duration_ms: 0.233947
+  type: 'test'
+  ...
+# Subtest: the selected ball is excluded from overlap checks
+ok 117 - the selected ball is excluded from overlap checks
+  ---
+  duration_ms: 0.108291
+  type: 'test'
+  ...
+# Subtest: a missing practice ball is only added when placement is confirmed
+ok 118 - a missing practice ball is only added when placement is confirmed
+  ---
+  duration_ms: 0.743201
+  type: 'test'
+  ...
+# Subtest: invalid coordinate input leaves the candidate unchanged
+ok 119 - invalid coordinate input leaves the candidate unchanged
+  ---
+  duration_ms: 0.09473
+  type: 'test'
+  ...
+# Subtest: 8-ball: break pots do not choose groups
+ok 120 - 8-ball: break pots do not choose groups
+  ---
+  duration_ms: 2.418955
+  type: 'test'
+  ...
+# Subtest: 8-ball: called legal pot chooses groups
+ok 121 - 8-ball: called legal pot chooses groups
+  ---
+  duration_ms: 1.111487
+  type: 'test'
+  ...
+# Subtest: 8-ball: uncalled pots do not choose groups
+ok 122 - 8-ball: uncalled pots do not choose groups
+  ---
+  duration_ms: 0.352342
+  type: 'test'
+  ...
+# Subtest: 8-ball: legal called 8 after clearing wins
+ok 123 - 8-ball: legal called 8 after clearing wins
+  ---
+  duration_ms: 0.220446
+  type: 'test'
+  ...
+# Subtest: 8-ball: early 8 loses
+ok 124 - 8-ball: early 8 loses
+  ---
+  duration_ms: 0.311652
+  type: 'test'
+  ...
+# Subtest: 8-ball: wrong-pocket 8 loses
+ok 125 - 8-ball: wrong-pocket 8 loses
+  ---
+  duration_ms: 0.152656
+  type: 'test'
+  ...
+# Subtest: 8-ball: scratched 8 loses
+ok 126 - 8-ball: scratched 8 loses
+  ---
+  duration_ms: 0.199686
+  type: 'test'
+  ...
+# Subtest: 8-ball: break 8 is spotted, not a win
+ok 127 - 8-ball: break 8 is spotted, not a win
+  ---
+  duration_ms: 0.629653
+  type: 'test'
+  ...
+# Subtest: 8-ball: wrong first contact gives ball in hand
+ok 128 - 8-ball: wrong first contact gives ball in hand
+  ---
+  duration_ms: 0.488123
+  type: 'test'
+  ...
+# Subtest: 8-ball: dry legal break counts distinct object balls, not cue rails
+ok 129 - 8-ball: dry legal break counts distinct object balls, not cue rails
+  ---
+  duration_ms: 0.47242
+  type: 'test'
+  ...
+# Subtest: 8-ball: repeated rails by one object are not four break rails
+ok 130 - 8-ball: repeated rails by one object are not four break rails
+  ---
+  duration_ms: 0.237993
+  type: 'test'
+  ...
+# Subtest: 9-ball: legal combination on 9 wins
+ok 131 - 9-ball: legal combination on 9 wins
+  ---
+  duration_ms: 0.163252
+  type: 'test'
+  ...
+# Subtest: 9-ball: a fouled 9 is spotted
+ok 132 - 9-ball: a fouled 9 is spotted
+  ---
+  duration_ms: 0.68844
+  type: 'test'
+  ...
+# Subtest: 9-ball: legal break enables push-out
+ok 133 - 9-ball: legal break enables push-out
+  ---
+  duration_ms: 0.339313
+  type: 'test'
+  ...
+# Subtest: 9-ball: declared push-out waives first-ball and rail requirements
+ok 134 - 9-ball: declared push-out waives first-ball and rail requirements
+  ---
+  duration_ms: 0.170302
+  type: 'test'
+  ...
+# Subtest: 9-ball: returning a push-out returns the shooter
+ok 135 - 9-ball: returning a push-out returns the shooter
+  ---
+  duration_ms: 0.213416
+  type: 'test'
+  ...
+# Subtest: 9-ball: accepting a push-out leaves incoming player at table
+ok 136 - 9-ball: accepting a push-out leaves incoming player at table
+  ---
+  duration_ms: 0.123493
+  type: 'test'
+  ...
+# Subtest: 9-ball: a push-out scratch is still a foul
+ok 137 - 9-ball: a push-out scratch is still a foul
+  ---
+  duration_ms: 0.138084
+  type: 'test'
+  ...
+# Subtest: 9-ball: third consecutive foul loses
+ok 138 - 9-ball: third consecutive foul loses
+  ---
+  duration_ms: 0.12172
+  type: 'test'
+  ...
+# Subtest: 10-ball: early called 10 is spotted
+ok 139 - 10-ball: early called 10 is spotted
+  ---
+  duration_ms: 0.572678
+  type: 'test'
+  ...
+# Subtest: 10-ball: called last 10 wins
+ok 140 - 10-ball: called last 10 wins
+  ---
+  duration_ms: 0.166737
+  type: 'test'
+  ...
+# Subtest: 10-ball: uncalled pot creates take-or-return decision
+ok 141 - 10-ball: uncalled pot creates take-or-return decision
+  ---
+  duration_ms: 0.219605
+  type: 'test'
+  ...
+# Subtest: 10-ball: a break-shot 10 does not win
+ok 142 - 10-ball: a break-shot 10 does not win
+  ---
+  duration_ms: 0.359012
+  type: 'test'
+  ...
+# Subtest: 14.1: every ball on a legal called shot scores
+ok 143 - 14.1: every ball on a legal called shot scores
+  ---
+  duration_ms: 0.245394
+  type: 'test'
+  ...
+# Subtest: 14.1: uncalled balls are spotted with no score
+ok 144 - 14.1: uncalled balls are spotted with no score
+  ---
+  duration_ms: 0.383778
+  type: 'test'
+  ...
+# Subtest: 14.1: safety pots are spotted
+ok 145 - 14.1: safety pots are spotted
+  ---
+  duration_ms: 0.534512
+  type: 'test'
+  ...
+# Subtest: 14.1: ordinary foul deducts one; does not grant arbitrary ball in hand
+ok 146 - 14.1: ordinary foul deducts one; does not grant arbitrary ball in hand
+  ---
+  duration_ms: 0.309579
+  type: 'test'
+  ...
+# Subtest: 14.1: scratch grants kitchen ball in hand
+ok 147 - 14.1: scratch grants kitchen ball in hand
+  ---
+  duration_ms: 0.275398
+  type: 'test'
+  ...
+# Subtest: 14.1: third foul deducts sixteen on that shot and requires a new break
+ok 148 - 14.1: third foul deducts sixteen on that shot and requires a new break
+  ---
+  duration_ms: 0.327024
+  type: 'test'
+  ...
+# Subtest: 14.1: breaking foul gives accept or rebreak choice
+ok 149 - 14.1: breaking foul gives accept or rebreak choice
+  ---
+  duration_ms: 0.341285
+  type: 'test'
+  ...
+# Subtest: 14.1: accepted breaking foul leaves table to incoming player
+ok 150 - 14.1: accepted breaking foul leaves table to incoming player
+  ---
+  duration_ms: 0.307215
+  type: 'test'
+  ...
+# Subtest: 14.1: normal fourteen-ball rerack preserves break ball and cue position
+ok 151 - 14.1: normal fourteen-ball rerack preserves break ball and cue position
+  ---
+  duration_ms: 0.595853
+  type: 'test'
+  ...
+# Subtest: 14.1: an interfering break ball moves to the head spot
+ok 152 - 14.1: an interfering break ball moves to the head spot
+  ---
+  duration_ms: 0.270742
+  type: 'test'
+  ...
+# Subtest: 14.1: a blocked head spot moves the break ball to the center
+ok 153 - 14.1: a blocked head spot moves the break ball to the center
+  ---
+  duration_ms: 0.303099
+  type: 'test'
+  ...
+# Subtest: 14.1: both balls interfering produces full rack and kitchen ball in hand
+ok 154 - 14.1: both balls interfering produces full rack and kitchen ball in hand
+  ---
+  duration_ms: 0.343139
+  type: 'test'
+  ...
+# Subtest: 14.1: cue interference with break ball behind head string spots cue at head
+ok 155 - 14.1: cue interference with break ball behind head string spots cue at head
+  ---
+  duration_ms: 0.277451
+  type: 'test'
+  ...
+# Subtest: 14.1: target score ends the match
+ok 156 - 14.1: target score ends the match
+  ---
+  duration_ms: 0.285243
+  type: 'test'
+  ...
+# Subtest: one-pocket: own pocket scores and keeps the inning
+ok 157 - one-pocket: own pocket scores and keeps the inning
+  ---
+  duration_ms: 0.217732
+  type: 'test'
+  ...
+# Subtest: one-pocket: opponent pocket scores for opponent
+ok 158 - one-pocket: opponent pocket scores for opponent
+  ---
+  duration_ms: 0.501633
+  type: 'test'
+  ...
+# Subtest: one-pocket: opponent pot on cue-ball scratch is spotted
+ok 159 - one-pocket: opponent pot on cue-ball scratch is spotted
+  ---
+  duration_ms: 0.247868
+  type: 'test'
+  ...
+# Subtest: one-pocket: neutral pocket waits to spot until inning ends
+ok 160 - one-pocket: neutral pocket waits to spot until inning ends
+  ---
+  duration_ms: 0.241267
+  type: 'test'
+  ...
+# Subtest: one-pocket: foul with no scored ball records a debt
+ok 161 - one-pocket: foul with no scored ball records a debt
+  ---
+  duration_ms: 0.143333
+  type: 'test'
+  ...
+# Subtest: one-pocket: a legal pot repays debt before scoring
+ok 162 - one-pocket: a legal pot repays debt before scoring
+  ---
+  duration_ms: 0.156873
+  type: 'test'
+  ...
+# Subtest: one-pocket: a foul returns a previously scored ball
+ok 163 - one-pocket: a foul returns a previously scored ball
+  ---
+  duration_ms: 0.231033
+  type: 'test'
+  ...
+# Subtest: one-pocket: eighth ball wins
+ok 164 - one-pocket: eighth ball wins
+  ---
+  duration_ms: 0.949147
+  type: 'test'
+  ...
+# Subtest: banks: a direct called one-rail bank scores
+ok 165 - banks: a direct called one-rail bank scores
+  ---
+  duration_ms: 0.307075
+  type: 'test'
+  ...
+# Subtest: banks: a pocket-jaw brush is not a called bank
+ok 166 - banks: a pocket-jaw brush is not a called bank
+  ---
+  duration_ms: 0.201699
+  type: 'test'
+  ...
+# Subtest: banks: a kick before first contact does not score
+ok 167 - banks: a kick before first contact does not score
+  ---
+  duration_ms: 0.192565
+  type: 'test'
+  ...
+# Subtest: banks: a kiss off another ball does not score
+ok 168 - banks: a kiss off another ball does not score
+  ---
+  duration_ms: 0.265183
+  type: 'test'
+  ...
+# Subtest: banks: rail count must match the call
+ok 169 - banks: rail count must match the call
+  ---
+  duration_ms: 0.230192
+  type: 'test'
+  ...
+# Subtest: 3-ball: every stroke counts even with no rail or contact
+ok 170 - 3-ball: every stroke counts even with no rail or contact
+  ---
+  duration_ms: 0.134519
+  type: 'test'
+  ...
+# Subtest: 3-ball: scratch adds a single penalty stroke
+ok 171 - 3-ball: scratch adds a single penalty stroke
+  ---
+  duration_ms: 0.127078
+  type: 'test'
+  ...
+# Subtest: 3-ball: clearing starts the other player on a fresh rack
+ok 172 - 3-ball: clearing starts the other player on a fresh rack
+  ---
+  duration_ms: 0.147248
+  type: 'test'
+  ...
+# Subtest: 3-ball: equal final totals produce a draw
+ok 173 - 3-ball: equal final totals produce a draw
+  ---
+  duration_ms: 0.196
+  type: 'test'
+  ...
+# Subtest: 3-ball: lower total wins
+ok 174 - 3-ball: lower total wins
+  ---
+  duration_ms: 0.211123
+  type: 'test'
+  ...
+# Subtest: rotation: legal combinations score face values
+ok 175 - rotation: legal combinations score face values
+  ---
+  duration_ms: 0.286885
+  type: 'test'
+  ...
+# Subtest: rotation: wrong first ball spots the pot without scoring
+ok 176 - rotation: wrong first ball spots the pot without scoring
+  ---
+  duration_ms: 0.442797
+  type: 'test'
+  ...
+# Subtest: practice: scratches do not introduce an opponent or penalty
+ok 177 - practice: scratches do not introduce an opponent or penalty
+  ---
+  duration_ms: 0.268859
+  type: 'test'
+  ...
+# Subtest: rule snapshots are independent, serializable and restorable
+ok 178 - rule snapshots are independent, serializable and restorable
+  ---
+  duration_ms: 0.225975
+  type: 'test'
+  ...
+# Subtest: strict match validator rejects incomplete or malformed states
+ok 179 - strict match validator rejects incomplete or malformed states
+  ---
+  duration_ms: 3.759973
+  type: 'test'
+  ...
+# Subtest: APA 8-ball stalemate voids rack counters and preserves the original breaker
+ok 180 - APA 8-ball stalemate voids rack counters and preserves the original breaker
+  ---
+  duration_ms: 1.402549
+  type: 'test'
+  ...
+# Subtest: APA 9-ball stalemate retains points/innings and marks every remaining ball dead
+ok 181 - APA 9-ball stalemate retains points/innings and marks every remaining ball dead
+  ---
+  duration_ms: 0.678095
+  type: 'test'
+  ...
+# Subtest: stalemate does not mutate unsupported or finished sessions
+ok 182 - stalemate does not mutate unsupported or finished sessions
+  ---
+  duration_ms: 0.950759
+  type: 'test'
+  ...
+# Subtest: next APA rack carries point score, resets timeout count and keeps handicap targets
+ok 183 - next APA rack carries point score, resets timeout count and keeps handicap targets
+  ---
+  duration_ms: 0.570286
+  type: 'test'
+  ...
+# Subtest: a completed match cannot advance another rack
+ok 184 - a completed match cannot advance another rack
+  ---
+  duration_ms: 0.322428
+  type: 'test'
+  ...
+# Subtest: timeouts cannot silently leak across racks or bypass Off in practice
+ok 185 - timeouts cannot silently leak across racks or bypass Off in practice
+  ---
+  duration_ms: 0.482826
+  type: 'test'
+  ...
+# Subtest: computer selection applies to the configured side, but practice stays human
+ok 186 - computer selection applies to the configured side, but practice stays human
+  ---
+  duration_ms: 0.378221
+  type: 'test'
+  ...
+# Subtest: coach direct candidate generator respects 8-ball groups
+ok 187 - coach direct candidate generator respects 8-ball groups
+  ---
+  duration_ms: 2.384034
+  type: 'test'
+  ...
+# Subtest: coach lowest-first candidate selection respects APA9 rules
+ok 188 - coach lowest-first candidate selection respects APA9 rules
+  ---
+  duration_ms: 0.616724
+  type: 'test'
+  ...
+# Subtest: no-object coach input is handled without a crash
+ok 189 - no-object coach input is handled without a crash
+  ---
+  duration_ms: 1.993855
+  type: 'test'
+  ...
+# Subtest: a recommended easy pot is actually made by the engine and leaves the input untouched
+ok 190 - a recommended easy pot is actually made by the engine and leaves the input untouched
+  ---
+  duration_ms: 854.074003
+  type: 'test'
+  ...
+# Subtest: coach scratch evaluation rejects a false easy win
+ok 191 - coach scratch evaluation rejects a false easy win
+  ---
+  duration_ms: 9.353352
+  type: 'test'
+  ...
+# Subtest: lag search uses actual simulation and returns a finite playable power
+ok 192 - lag search uses actual simulation and returns a finite playable power
+  ---
+  duration_ms: 255.909819
+  type: 'test'
+  ...
+# Subtest: settings have unique keys, categories, defaults, bounds and tooltips
+ok 193 - settings have unique keys, categories, defaults, bounds and tooltips
+  ---
+  duration_ms: 1.949309
+  type: 'test'
+  ...
+# Subtest: unknown settings and invalid values do not enter normalized state
+ok 194 - unknown settings and invalid values do not enter normalized state
+  ---
+  duration_ms: 0.224102
+  type: 'test'
+  ...
+# Subtest: Arcade explicitly disables only designated realism features
+ok 195 - Arcade explicitly disables only designated realism features
+  ---
+  duration_ms: 0.351872
+  type: 'test'
+  ...
+# Subtest: Custom does not reset selected realism details
+ok 196 - Custom does not reset selected realism details
+  ---
+  duration_ms: 1.009697
+  type: 'test'
+  ...
+# Subtest: camera and visual themes cannot affect physical table/equipment settings
+ok 197 - camera and visual themes cannot affect physical table/equipment settings
+  ---
+  duration_ms: 0.314166
+  type: 'test'
+  ...
+# Subtest: the displayed union probability equals the actual enumerated delivery outcomes
+ok 198 - the displayed union probability equals the actual enumerated delivery outcomes
+  ---
+  duration_ms: 13.652695
+  type: 'test'
+  ...
+# Subtest: ordinary level center-ball physical miscue is zero in the healthy-tip model
+ok 199 - ordinary level center-ball physical miscue is zero in the healthy-tip model
+  ---
+  duration_ms: 5.036315
+  type: 'test'
+  ...
+# Subtest: stronger skill narrows routine stroke-delivery variation
+ok 200 - stronger skill narrows routine stroke-delivery variation
+  ---
+  duration_ms: 22.711311
+  type: 'test'
+  ...
+# Subtest: elevated near-edge strokes carry more modeled risk than center ball
+ok 201 - elevated near-edge strokes carry more modeled risk than center ball
+  ---
+  duration_ms: 4.184411
+  type: 'test'
+  ...
+# Subtest: low chalk raises tip-slip risk at demanding offsets
+ok 202 - low chalk raises tip-slip risk at demanding offsets
+  ---
+  duration_ms: 6.146084
+  type: 'test'
+  ...
+# Subtest: an expert cannot repeal the tip friction cone
+ok 203 - an expert cannot repeal the tip friction cone
+  ---
+  duration_ms: 2.77321
+  type: 'test'
+  ...
+# Subtest: Arcade stroke delivery is exact for every random sample
+ok 204 - Arcade stroke delivery is exact for every random sample
+  ---
+  duration_ms: 1.234129
+  type: 'test'
+  ...
+# Subtest: Arcade opponent difficulty remains independent of exact human delivery
+ok 205 - Arcade opponent difficulty remains independent of exact human delivery
+  ---
+  duration_ms: 0.361536
+  type: 'test'
+  ...
+# Subtest: same stored seed and input produces the same executed physical impulse
+ok 206 - same stored seed and input produces the same executed physical impulse
+  ---
+  duration_ms: 0.51912
+  type: 'test'
+  ...
+# Subtest: risk estimation never advances random state or mutates the world
+ok 207 - risk estimation never advances random state or mutates the world
+  ---
+  duration_ms: 0.722271
+  type: 'test'
+  ...
+# Subtest: sampled tip slips really execute with the sampled friction coefficient
+ok 208 - sampled tip slips really execute with the sampled friction coefficient
+  ---
+  duration_ms: 0.326615
+  type: 'test'
+  ...
+# Subtest: chalk consumption depends on actual shot demands
+ok 209 - chalk consumption depends on actual shot demands
+  ---
+  duration_ms: 0.106377
+  type: 'test'
+  ...
+# Subtest: timeout counts apply to a rack and selected player skill
+ok 210 - timeout counts apply to a rack and selected player skill
+  ---
+  duration_ms: 0.447444
+  type: 'test'
+  ...
+# Subtest: timeouts before a break are not charged and Off really disables them
+ok 211 - timeouts before a break are not charged and Off really disables them
+  ---
+  duration_ms: 0.136993
+  type: 'test'
+  ...
+# Subtest: APA 9-ball handicap is separate from execution strength
+ok 212 - APA 9-ball handicap is separate from execution strength
+  ---
+  duration_ms: 0.142461
+  type: 'test'
+  ...
+# Subtest: match serialization contains chalk, random state, targets and timeout usage
+ok 213 - match serialization contains chalk, random state, targets and timeout usage
+  ---
+  duration_ms: 0.511138
+  type: 'test'
+  ...
+1..213
+# tests 213
+# suites 0
+# pass 213
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1595.060045

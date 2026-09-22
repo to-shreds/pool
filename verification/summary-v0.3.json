@@ -1,0 +1,30 @@
+{
+  "version": "0.3.0",
+  "unit": {
+    "passed": 213,
+    "failed": 0,
+    "skipped": 0
+  },
+  "browser": {
+    "functional": 103,
+    "layout": 360,
+    "graphics": 29,
+    "migration_and_additional": 30,
+    "modular": 9,
+    "total": 531,
+    "page_errors": 0
+  },
+  "stress": {
+    "seed": 843219,
+    "accepted": 256,
+    "rejected": 0,
+    "failed": 0
+  },
+  "offline": {
+    "bytes": 332419,
+    "sha256": "7434e6c17376fadd860c52a84380308e868f498ba3e4f579fc13cc9160fae18d"
+  },
+  "public_deployment_verified": false,
+  "physical_android_verified": false,
+  "github_source_publication": "pending"
+}

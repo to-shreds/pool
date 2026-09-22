@@ -1,0 +1,142 @@
+{
+  "schema": "cue-lab-save-v1",
+  "world": {
+    "balls": [
+      {
+        "id": 0,
+        "p": [
+          0.84,
+          0.635,
+          0.028575
+        ],
+        "v": [
+          0,
+          0,
+          0
+        ],
+        "w": [
+          0,
+          0,
+          0
+        ],
+        "q": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "active": true,
+        "pocket": null
+      },
+      {
+        "id": 1,
+        "p": [
+          1.28,
+          0.635,
+          0.028575
+        ],
+        "v": [
+          0,
+          0,
+          0
+        ],
+        "w": [
+          0,
+          0,
+          0
+        ],
+        "q": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "active": true,
+        "pocket": null
+      }
+    ],
+    "cfg": {
+      "slide": 0.2,
+      "roll": 0.011,
+      "spin": 8,
+      "ballRestitution": 0.95,
+      "ballFriction": 0.045,
+      "railRestitution": 0.78,
+      "railFriction": 0.18,
+      "slateRestitution": 0.32,
+      "cueMass": 0.54,
+      "cueRestitution": 0.75,
+      "tipFriction": 0.7,
+      "deflection": 1.6
+    },
+    "time": 0
+  },
+  "rules": {
+    "mode": "practice",
+    "players": [
+      "Player 1",
+      "Player 2"
+    ],
+    "target": 0,
+    "turn": 0,
+    "scores": [
+      0,
+      0
+    ],
+    "runs": [
+      0,
+      0
+    ],
+    "high": [
+      0,
+      0
+    ],
+    "groups": [
+      null,
+      null
+    ],
+    "fouls": [
+      0,
+      0
+    ],
+    "owed": [
+      0,
+      0
+    ],
+    "scored": [
+      [],
+      []
+    ],
+    "pendingSpot": [],
+    "break": true,
+    "shots": 0,
+    "winner": null,
+    "ballInHand": null,
+    "pushAvailable": false,
+    "choice": null,
+    "pockets": [
+      2,
+      3
+    ],
+    "strokes": 0,
+    "roundScores": [
+      [],
+      []
+    ],
+    "log": [],
+    "message": "Practice: draw. Change one control, then use Undo to compare."
+  },
+  "shot": {
+    "angle": 0,
+    "side": 0,
+    "up": -0.5,
+    "elevation": 0,
+    "power": 53
+  },
+  "preferences": {
+    "guide": true,
+    "trails": true,
+    "sound": false,
+    "cloth": "normal"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "method": "Chromium set_content of index.html with local asset bytes intercepted at a reserved .invalid URL. This is not a public deployment check.",
+  "assets": [
+    "src/style.css",
+    "src/features.css",
+    "src/physics.js",
+    "src/rules.js",
+    "src/settings.js",
+    "src/execution.js",
+    "src/apa.js",
+    "src/session.js",
+    "src/placement.js",
+    "src/renderer3d.js",
+    "src/worker-bundle.js",
+    "src/app.js"
+  ],
+  "errors": [],
+  "checks": [
+    "Modular entry loads all twelve local assets",
+    "Modular state validates",
+    "Modular shot and rules complete",
+    "Modular undo restores exact state",
+    "Modular precision view opens at six times zoom",
+    "All twelve categories are available",
+    "Bundled real Blob worker returns a coach candidate",
+    "Modular page has no document scrolling",
+    "No modular page-script errors"
+  ],
+  "passed": 9,
+  "failed": 0
+}
