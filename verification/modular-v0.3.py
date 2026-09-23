@@ -18,7 +18,7 @@ with sync_playwright() as p:
   report['assets'].append(path);route.fulfill(body=source.read_bytes(),content_type=mimetypes.guess_type(path)[0] or 'text/plain')
  pg.route('https://cue-lab.invalid/pool/**',serve)
  pg.set_content((ROOT/'index.html').read_text().replace('<head>','<head><base href="https://cue-lab.invalid/pool/">'))
- pg.wait_for_function('window.CueLab?.version === "0.3.0"')
+ pg.wait_for_function('window.CueLab?.version === "0.3.1"')
  check('Modular entry loads all twelve local assets',len(set(report['assets']))==12)
  check('Modular state validates',pg.evaluate('CueLab.validateSave(CueLab.snapshot())'))
  saved=pg.evaluate('CueLab.snapshot()');pg.locator('#shoot').click();pg.locator('#finish').click()
