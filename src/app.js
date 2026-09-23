@@ -128,7 +128,7 @@ function refreshShot(){
  $('shoot').disabled=shotRunning||!!replay||!!rules.choice||rules.winner!==null||arranging||placing||bad||needCall;
  $('shotMode').textContent=replay?'REPLAY':arranging?'ARRANGE':rules.winner!==null?'GAME OVER':shotRunning?'IN MOTION':rules.break?'BREAK':'AIM';
  let hint='Drag on the table to aim. Nothing fires until you press Shoot.';
- if(needCall)hint='Aim tab: choose a ball and pocket, or select Safety.';
+ if(needCall)hint=calledBallId()===null?'Call first: tap an object ball on the table.':'Call first: tap the pocket on the table.';
  if(placing)hint='Fine-tune the preview, then press Place here. Cancel leaves the position unchanged.';
  if(arranging)hint='Select a ball on Practice, then tap the table to place it.';
  if(shotRunning)hint='The balls are moving. Finish shot skips the animation, not the physics.';
@@ -374,7 +374,7 @@ canvas.addEventListener('pointerdown',e=>{
  if(shotRunning||replay||rules.choice||rules.winner!==null||editorState||aiThinking||CM.isComputer(session,rules)||session.rackEnded)return;e.preventDefault();canvas.setPointerCapture(e.pointerId);aimPointer=e.pointerId;
  if(use3D()&&!arranging){d3gesture={id:e.pointerId,x:e.clientX,y:e.clientY,angle,orbit:settings.orbit,moved:false};return;}
  const [x,y]=fromScreen(e.clientX,e.clientY);
- if(markPocketAt(x,y)){aimPointer=null;return;}
+ if(handleDeclarationAt(x,y)){aimPointer=null;return;}
  if(arranging){
   const id=editId,kitchen=false;
   if(id===0){openPrecision(0,true);editorState.set(x,y,true);updatePrecision();return;}
@@ -385,7 +385,7 @@ canvas.addEventListener('pointerdown',e=>{
 });
 canvas.addEventListener('pointermove',e=>{if(d3gesture&&d3gesture.id===e.pointerId){const dx=e.clientX-d3gesture.x;if(Math.abs(dx)>3)d3gesture.moved=true;if(cameraLook)settings.orbit=clamp(d3gesture.orbit-dx*.3,-180,180);else angle=d3gesture.angle-dx*.14*Math.PI/180;refreshShot();return;}if(e.pointerId!==aimPointer||shotRunning||replay||arranging||placing)return;
  const [x,y]=fromScreen(e.clientX,e.clientY),cue=world.get(0);if(Math.hypot(x-cue.p[0],y-cue.p[1])>.03){angle=Math.atan2(y-cue.p[1],x-cue.p[0]);refreshShot();}});
-function endAim(e){if(d3gesture&&d3gesture.id===e.pointerId){if(!d3gesture.moved&&e.type!=='pointercancel'&&!cameraLook&&renderer3d){const pt=renderer3d.point(e.clientX,e.clientY);if(pt&&!markPocketAt(...pt)){const cue=world.get(0);if(Math.hypot(pt[0]-cue.p[0],pt[1]-cue.p[1])>.04)angle=Math.atan2(pt[1]-cue.p[1],pt[0]-cue.p[0]);}}d3gesture=null;refreshShot();}if(e.pointerId===aimPointer){aimPointer=null;persist();}}
+function endAim(e){if(d3gesture&&d3gesture.id===e.pointerId){if(!d3gesture.moved&&e.type!=='pointercancel'&&!cameraLook&&renderer3d){const pt=renderer3d.point(e.clientX,e.clientY);if(pt&&!handleDeclarationAt(...pt)){const cue=world.get(0);if(Math.hypot(pt[0]-cue.p[0],pt[1]-cue.p[1])>.04)angle=Math.atan2(pt[1]-cue.p[1],pt[0]-cue.p[0]);}}d3gesture=null;refreshShot();}if(e.pointerId===aimPointer){aimPointer=null;persist();}}
 canvas.addEventListener('pointerup',endAim);canvas.addEventListener('pointercancel',endAim);
 function tipAt(e){if(CM.isComputer(session,rules)||aiThinking)return;const b=$('tip').getBoundingClientRect(),size=Math.min(b.width,b.height);side=(e.clientX-b.left-b.width/2)/(size*.38);up=-(e.clientY-b.top-b.height/2)/(size*.38);const s=Math.hypot(side,up);if(s>.97){side*=.97/s;up*=.97/s;}changed();}
 $('tip').addEventListener('pointerdown',e=>{if(shotRunning||replay)return;e.preventDefault();tipPointer=e.pointerId;$('tip').setPointerCapture(e.pointerId);tipAt(e);});
@@ -400,6 +400,8 @@ $('fineAim').onchange=()=>{fineBase=angle;$('fineAim').value=0;persist();};
 function aimBy(d){if(!shotRunning&&!replay&&!arranging&&!placing){angle+=d*Math.PI/180;changed();}}
 $('aimLeft').onclick=()=>aimBy(.1);$('aimRight').onclick=()=>aimBy(-.1);
 for(const id of ['callBall','callPocket','safety','push','bankCount'])$(id).onchange=changed;
+$('callSafetyButton').onclick=()=>{$('safety').checked=!$('safety').checked;if($('safety').checked){$('callBall').value='';$('callPocket').value='';}refresh();persist();};
+$('callBanksButton').onclick=()=>{const n=Number($('bankCount').value)%3+1;$('bankCount').value=String(n);refresh();persist();};
 $('shoot').onclick=()=>beginShot(false);$('undo').onclick=undo;$('finish').onclick=finishNow;$('replay').onclick=startReplay;
 $('newGame').onclick=()=>newGame(rules.mode);$('mode').onchange=()=>newGame($('mode').value);
 $('guide').onclick=()=>{guide=!guide;settings.guide=guide;refresh();persist();};
@@ -482,7 +484,7 @@ COACHING TIMEOUT
 Coach evaluates the current position using the same search engine as the computer. It explains recommended power, contact, pocket or safety, the next evaluated ball and the ideal cue-ball finish. Demo plays a ghost copy and leaves the live table and controls intact. Apply changes the setup but never fires. Simulation still applies your execution uncertainty when you shoot. The success count is a small sample, not a guaranteed make. Timeouts can be APA-style, custom, unlimited or off; practice and pre-break advice are uncharged when coaching is enabled.
 
 RULES AND MATCHES
-The game menu keeps all nine Club/practice modes and adds separate APA-derived 8-ball and 9-ball. Club called-shot controls appear when required. APA 8-ball only marks the 8 pocket: tap a pocket or select it when on the 8. APA 9-ball scores points across racks and has no push-out. APA races use the official chart values, not an attempted calculation of the Equalizer handicap. Match settings provide lag or first-break choice, race/points and next-rack behavior. Defense records intent; in APA a legal defensive pot can still keep the turn. Match has a scorecard, event-based referee record and agreed stalemate for APA modes.
+The game menu keeps all nine Club/practice modes and adds separate APA-derived 8-ball and 9-ball. In a call-shot game, the table asks for the call before aiming: tap the object ball, then tap the pocket. Tap a different ball or pocket to change it. APA 8-ball never asks for ordinary calls; only mark the pocket when shooting the 8. APA 9-ball scores points across racks and has no push-out. APA races use the official chart values, not an attempted calculation of the Equalizer handicap. Match settings provide lag or first-break choice, race/points and next-rack behavior. Defense records intent; in APA a legal defensive pot can still keep the turn. Match has a scorecard, event-based referee record and agreed stalemate for APA modes.
 
 SAVES AND PRACTICE
 Undo restores the complete prior position, score, settings, chalk and random seed. Repeating the identical restored shot does not reroll the outcome. Replay is view-only. Finish shot skips animation, not physics. Practice offers six presets, editable balls, 20 named drill slots and instant undo. Export makes a portable JSON backup; old 0.1/0.2 saves migrate with defaults. Local-file and hosted browser saves are separate: export then import to move between them. Settings and saves can be blocked by browser storage policy, so keep an exported backup.
@@ -641,6 +643,7 @@ function aimGeometry(){const cue=world.get(0);if(!cue?.active)return null;const 
 function drawFeatureOverlay(){
  if(settings.frozenHints&&!shotRunning&&!replay)for(const f of frozenCache){const b=world.get(f.id);if(b?.active){const [x,y]=toScreen(...b.p);ctx.strokeStyle='#edc48a';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,P.radius(b)*view.scale+3,0,Math.PI*2);ctx.stroke();}}
  if(rules.mode==='apa8'&&rules.marker!==null){const p=world.table.pockets[rules.marker];if(p){const [x,y]=toScreen(p.x+(p.x<L/2?.1:-.1),p.y);ctx.fillStyle='#d6e89f';ctx.beginPath();ctx.arc(x,y,.032*view.scale,0,Math.PI*2);ctx.fill();ctx.fillStyle='#213128';ctx.font='bold '+Math.max(7,.031*view.scale)+'px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('8',x,y);}}
+ const called=calledBallId();if(called&&!shotRunning&&!replay){const b=world.get(called);if(b?.active){const [x,y]=toScreen(...b.p);ctx.save();ctx.strokeStyle='#eff6b2';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.arc(x,y,P.radius(b)*view.scale+6,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#eff6b2';ctx.font='bold '+Math.max(8,.025*view.scale)+'px system-ui';ctx.textAlign='center';ctx.fillText('CALL',x,y-P.radius(b)*view.scale-13);ctx.restore();}}
  if(coachOverlay&&!shotRunning&&!replay){const end=coachOverlay.measure.cueEnd,[x,y]=toScreen(...end);ctx.fillStyle='#d3e8a122';ctx.strokeStyle='#d3e8a1';ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(x,y,.10*view.scale,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.setLineDash([]);}
 }
 function draw3DOverlay(){
@@ -649,11 +652,45 @@ function draw3DOverlay(){
  ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
  if(settings.pocketLabels){ctx.font='bold 12px system-ui';for(const p of world.table.pockets){const a=project([p.x,p.y,.10]);if(!a)continue;ctx.fillStyle='#102324d9';ctx.beginPath();ctx.arc(a[0],a[1],10,0,Math.PI*2);ctx.fill();ctx.fillStyle='#edf2cf';ctx.fillText(p.label,a[0],a[1]);}}
  if(settings.frozenHints&&!shotRunning&&!replay){ctx.font='10px system-ui';for(const f of frozenCache){const b=world.get(f.id);if(!b?.active)continue;const a=project([b.p[0],b.p[1],P.radius(b)*2+.025]);if(a){ctx.fillStyle='#ecc58a';ctx.fillText('FROZEN '+(b.id||'CUE'),a[0],a[1]);}}}
+ const called=calledBallId();if(called&&!shotRunning&&!replay){const b=world.get(called);if(b?.active){const a=project([b.p[0],b.p[1],P.radius(b)*2+.035]);if(a){ctx.fillStyle='#eff6b2';ctx.font='bold 11px system-ui';ctx.fillText('CALL '+called,a[0],a[1]);}}}
  if(coachOverlay&&!shotRunning&&!replay){const end=coachOverlay.measure.cueEnd,pts=Array.from({length:49},(_,i)=>project([end[0]+Math.cos(i/48*Math.PI*2)*.10,end[1]+Math.sin(i/48*Math.PI*2)*.10,.005]));if(pts.every(Boolean)){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.setLineDash([4,4]);ctx.fillStyle='#d3e8a129';ctx.strokeStyle='#d3e8a1';ctx.fill();ctx.stroke();}}
  ctx.restore();
 }
 function drawMinimap(balls){const el=$('mini3d');el.hidden=!use3D()||!settings.minimap;if(el.hidden)return;const c=el.getContext('2d'),s=126/L,ox=7,oy=78;c.clearRect(0,0,140,88);c.fillStyle=CS.felt(settings);c.fillRect(ox,oy-W*s,L*s,W*s);for(const p of world.table.pockets){c.beginPath();c.arc(ox+p.x*s,oy-p.y*s,3,0,6.283);c.fillStyle='#03080c';c.fill();}for(const b of balls)if(b.active){c.beginPath();c.arc(ox+b.p[0]*s,oy-b.p[1]*s,Math.max(2,P.radius(b)*s),0,6.283);c.fillStyle=cssColor(b.id);c.fill();}}
-function markPocketAt(x,y){if(rules.mode!=='apa8'||!rules.onEight(world)||shotRunning)return false;const i=world.table.pockets.findIndex(p=>Math.hypot(p.x-x,p.y-y)<.12);if(i<0)return false;rules.marker=i;$('callPocket').value=String(i+1);refresh();persist();toast('8-ball pocket marked: '+world.table.pockets[i].label+'.');return true;}
+function calledBallId(){const n=Number($('callBall').value);return Number.isInteger(n)&&n>0?n:null;}
+function calledPocketId(){const n=Number($('callPocket').value);return Number.isInteger(n)&&n>=1&&n<=6?n-1:null;}
+function declarationMode(){if(session.lag||session.rackEnded||shotRunning||replay||arranging||placing||rules.winner!==null)return null;if(rules.mode==='apa8'&&rules.onEight(world))return 'apa8';if(rules.needsCall()&&!$('safety').checked&&!$('push').checked)return 'called';return null;}
+function ballAtPoint(x,y){let best=null,dist=Infinity;for(const b of world.balls)if(b.active&&b.id>0){const d=Math.hypot(b.p[0]-x,b.p[1]-y),limit=P.radius(b)*1.55;if(d<=limit&&d<dist){best=b.id;dist=d;}}return best;}
+function pocketAtPoint(x,y){let best=null,dist=Infinity;for(let i=0;i<world.table.pockets.length;i++){const p=world.table.pockets[i],d=Math.hypot(p.x-x,p.y-y);if(d<.125&&d<dist){best=i;dist=d;}}return best;}
+function setDirectBall(id){if(!world.get(id)?.active||id===0)return false;$('callBall').value=String(id);$('callPocket').value='';$('safety').checked=false;coachOverlay=null;riskCache=null;refresh();persist();return true;}
+function setDirectPocket(i){if(i===null||!world.table.pockets[i])return false;$('callPocket').value=String(i+1);if(rules.mode==='apa8')rules.marker=i;$('safety').checked=false;coachOverlay=null;riskCache=null;refresh();persist();return true;}
+function handleDeclarationAt(x,y){const mode=declarationMode();if(!mode)return false;const pocket=pocketAtPoint(x,y),ball=ballAtPoint(x,y);
+ if(mode==='apa8'){
+  if(pocket!==null){setDirectPocket(pocket);toast('8-ball pocket marked: '+world.table.pockets[pocket].label+'.');return true;}
+  if(rules.marker===null&&calledPocketId()===null){toast('Mark the 8-ball pocket first.');return true;}
+  return false;
+ }
+ const currentBall=calledBallId(),currentPocket=calledPocketId();
+ if(currentBall===null){if(ball!==null){setDirectBall(ball);toast('Ball '+ball+' called. Now tap a pocket.');}else toast('Call the shot first: tap an object ball.');return true;}
+ if(currentPocket===null){if(ball!==null&&ball!==currentBall){setDirectBall(ball);toast('Ball '+ball+' called. Now tap a pocket.');return true;}if(pocket!==null){setDirectPocket(pocket);toast('Called '+currentBall+' to pocket '+world.table.pockets[pocket].label+'.');return true;}toast('Ball '+currentBall+' selected. Tap the pocket you intend to make.');return true;}
+ if(ball!==null&&ball!==currentBall){setDirectBall(ball);toast('Call changed to ball '+ball+'. Now tap a pocket.');return true;}
+ if(pocket!==null&&pocket!==currentPocket){setDirectPocket(pocket);toast('Call changed: '+currentBall+' to pocket '+world.table.pockets[pocket].label+'.');return true;}
+ return false;
+}
+function markPocketAt(x,y){if(rules.mode!=='apa8'||!rules.onEight(world)||shotRunning)return false;const i=pocketAtPoint(x,y);if(i===null)return false;return setDirectPocket(i);}
+function refreshCallHud(){
+ $('callControls').hidden=true;const hud=$('callHud');if(!hud)return;const mode=declarationMode(),comp=CM.isComputer(session,rules)||aiThinking;
+ if(!mode||comp){hud.hidden=true;return;}
+ hud.hidden=false;const ball=calledBallId(),pocket=calledPocketId(),safety=$('safety').checked;$('callSafetyButton').classList.toggle('selected',safety);$('callSafetyButton').textContent=safety?'Safety ✓':'Safety';
+ $('callBanksButton').hidden=rules.mode!=='banks';if(rules.mode==='banks')$('callBanksButton').textContent=$('bankCount').value+' bank'+($('bankCount').value==='1'?'':'s');
+ if(mode==='apa8'){
+  $('callHudTitle').textContent='Mark the 8';$('callHudText').textContent=pocket===null?'Tap the pocket before you aim.':'Pocket '+world.table.pockets[pocket].label+' marked · tap another pocket to change.';$('callSafetyButton').hidden=true;return;
+ }
+ $('callSafetyButton').hidden=false;
+ if(ball===null){$('callHudTitle').textContent='Call your shot';$('callHudText').textContent='1. Tap an object ball.';}
+ else if(pocket===null){$('callHudTitle').textContent='Ball '+ball;$('callHudText').textContent='2. Tap the pocket.';}
+ else{$('callHudTitle').textContent='Called '+ball+' → '+world.table.pockets[pocket].label;$('callHudText').textContent='Aim now · tap another ball or pocket to change.';}
+}
 function refreshFeatures(){
  if(!$('settingsButton'))return;layoutMode();guide=settings.guide;trails=settings.trails;sound=settings.sound;$('cloth').value=settings.clothPreset;
  frozenCache=P.frozen(world);$('settingsButton').disabled=shotRunning||!!replay||placing;
@@ -673,13 +710,11 @@ function refreshFeatures(){
  $('matchInfo').textContent=(settings.style==='arcade'?'ARCADE':settings.style==='simulation'?'SIMULATION':'CUSTOM')+' · RACK '+session.rack;
  if(session.rackEnded){$('shotMode').textContent=session.winner===null?'RACK OVER':'MATCH OVER';$('status').textContent=rules.message+(session.winner===null?' Select Next rack to continue.':'');}
  const onEight=rules.mode==='apa8'&&rules.onEight(world);
- if(rules.mode==='apa8'){
-  $('callControls').hidden=!onEight;$('callBall').parentElement.hidden=true;
-  if(onEight&&rules.marker!==null)$('callPocket').value=String(rules.marker+1);
- }else $('callBall').parentElement.hidden=false;
+ if(onEight&&rules.marker!==null)$('callPocket').value=String(rules.marker+1);
+ $('callControls').hidden=true;
  $('defenseButton').classList.toggle('selected',$('safety').checked);$('defenseButton').disabled=shotRunning||!!replay||CM.isComputer(session,rules)||session.rackEnded;
  if(session.lag){$('status').textContent=lagMessage();$('shotMode').textContent='LAG';$('callControls').hidden=true;$('nextRackButton').hidden=!session.lag.awaitNext;$('nextRackButton').textContent='Next lag';$('placeCue').disabled=true;}
- refreshFeatureShot();scheduleComputer();
+ refreshCallHud();refreshFeatureShot();scheduleComputer();
 }
 function hostObstruction(){if(session.lag)return '';const e=elevation*Math.PI/180;if(!settings.allowMasse&&elevation>=40&&Math.hypot(side,up)>.18)return 'Massé-style strokes are disabled by House settings.';
  if(!settings.allowJump&&elevation>=25){const temp=new World([clone(world.get(0))],world.cfg);temp.strike(angle,side,up,elevation,power,{noMiscue:true});if(temp.get(0).v[2]>.25)return 'Jump-style strokes are disabled by House settings.';}
@@ -693,7 +728,7 @@ function refreshFeatureShot(){if(!$('riskButton'))return;
  const reason=hostObstruction();if(reason){$('tipWarning').hidden=false;$('tipWarning').textContent=reason;}
  const onEight=rules.mode==='apa8'&&rules.onEight(world);const needMark=onEight&&rules.marker===null&&!$('callPocket').value;
  $('shoot').disabled=$('shoot').disabled||comp||aiThinking||session.rackEnded||!!reason||needMark||!!session.lag?.awaitNext;
- if(needMark)$('shotHint').textContent='Mark the 8-ball pocket: choose it above, or tap the pocket on the table.';
+ if(needMark)$('shotHint').textContent='Mark the 8-ball pocket first: tap the pocket on the table.';
  if(comp&&!active)$('shotHint').textContent=computerPaused?'Computer paused. Press Resume AI.':aiThinking?'Computer is comparing simulated shots.':'Computer to play.';
  if(session.lag){$('shoot').textContent='Lag';if(!session.lag.awaitNext&&!comp&&!active)$('shoot').disabled=false;$('shotHint').textContent='Use power to send the ball to the far rail and back near the head rail.';}
  else $('shoot').innerHTML='Shoot <span>↗</span>';
@@ -787,7 +822,7 @@ function applyCoach(){if(!coachState?.ready||!settings.applySuggestion||!coachSt
  if(applyCandidate(c)){coachOverlay=c;$('coachDialog').close();coachState=null;selectTab('shot');selectPage('shot','aim');refresh();persist();toast('Suggestion applied. You still take the shot.');}
 }
 function advanceRack(){if(session.lag?.awaitNext){nextLag();return;}
- const next=CM.nextRack(session,rules);if(!next)return;const marker=rules.marker;cancelAnalysis();generation++;rules=next;if(rules.mode==='apa8')rules.marker=marker;world=new World(P.rack(rules.mode,world.table),world.cfg);equipWorld();syncDimensions();angle=side=up=elevation=0;power=85;trace=[];sinks=[];lastReplay=null;undoStack=[];cameraAnchor=null;coachState=coachOverlay=null;paceStart=performance.now();$('callBall').value='';$('callPocket').value=marker!==null&&marker!==undefined?String(marker+1):'';refresh();persist();}
+ const next=CM.nextRack(session,rules);if(!next)return;cancelAnalysis();generation++;rules=next;if(rules.mode==='apa8')rules.marker=null;world=new World(P.rack(rules.mode,world.table),world.cfg);equipWorld();syncDimensions();angle=side=up=elevation=0;power=85;trace=[];sinks=[];lastReplay=null;undoStack=[];cameraAnchor=null;coachState=coachOverlay=null;paceStart=performance.now();$('callBall').value='';$('callPocket').value='';refresh();persist();}
 function scheduleNextRack(){if(!settings.autoNext||!session.rackEnded||session.winner!==null)return;const epoch=generation;setTimeout(()=>{if(epoch===generation&&session.rackEnded&&!anyDialog()&&!replay)advanceRack();},2500);}
 function statsText(){let text=Q.modes[rules.mode].name+' · rack '+session.rack+'\n'+(session.winner===null?'Match in progress.':session.winner==='draw'?'Match drawn.':rules.players[session.winner]+' won the match.')+'\n\n';
  for(let i=0;i<2;i++){const st=session.stats[i];text+=rules.players[i].toUpperCase()+'\nRacks won: '+session.wins[i]+'\nShots: '+st.shots+'; balls pocketed: '+st.pots+'\nScoring attacking strokes: '+st.scoringShots+' / '+st.attacks+(st.attacks?' ('+Math.round(st.scoringShots/st.attacks*100)+'%)':'')+'\nScratches: '+st.scratches+'; fouls: '+st.fouls+'\nDeclared defenses: '+st.defense+'\nTagged bank makes: '+st.bankMakes+' / '+st.bankAttempts+'\nBest run: '+st.bestRun+'\n8 on break: '+st.eightBreak+'; 9 on break: '+st.nineBreak+'; break-and-runs: '+st.breakRuns+'\n\n';}
@@ -847,7 +882,7 @@ for(let i=0;i<=15;i++)$('editBall').add(new Option(i===0?'Cue ball':'Ball '+i,St
 try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved&&validSave(saved))restore(saved);}catch(e){}
 equipWorld();syncDimensions();refresh();resize();requestAnimationFrame(frame);
 // Small read/test surface, useful for reproducible regression fixtures.
-window.CueLab={version:'0.3.0',settings:()=>clone(settings),session:()=>clone(session),setSettings:applySettings,coach:requestCoach,nextRack:advanceRack,computer:runComputer,markPocket:i=>{rules.marker=i;$('callPocket').value=String(i+1);refresh();},risk:()=>strokeRisk(),placement:()=>editorState?{id:editorState.id,x:editorState.x,y:editorState.y,zoom:editorState.zoom,step:editorState.step,valid:editorState.valid(),view:{...editorState.view}}:null,snapshot:data,validateSave:validSave,getWorld:()=>world,getRules:()=>rules,
+window.CueLab={version:'0.3.1',settings:()=>clone(settings),session:()=>clone(session),setSettings:applySettings,coach:requestCoach,nextRack:advanceRack,computer:runComputer,markPocket:i=>{rules.marker=i;$('callPocket').value=String(i+1);refresh();},callState:()=>({mode:declarationMode(),ball:calledBallId(),pocket:calledPocketId(),safety:$('safety').checked,bankCount:Number($('bankCount').value)}),screenPoint:(x,y)=>toScreen(x,y),risk:()=>strokeRisk(),placement:()=>editorState?{id:editorState.id,x:editorState.x,y:editorState.y,zoom:editorState.zoom,step:editorState.step,valid:editorState.valid(),view:{...editorState.view}}:null,snapshot:data,validateSave:validSave,getWorld:()=>world,getRules:()=>rules,
  setDrill,shoot:beginShot,finish:finishNow,undo,restore,setShot:s=>{if(shotRunning)return;({angle=angle,side=side,up=up,elevation=elevation,power=power}=s);refresh();},
  status:()=>({shotRunning,replay:!!replay,arranging,placing,aiThinking,rackEnded:session.rackEnded,undoCount:undoStack.length,replayFrames:lastReplay?.length||0})};
 })();
