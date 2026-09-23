@@ -1,6 +1,6 @@
 {
   "name": "cue-lab",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "description": "Offline browser pool with a three-dimensional ball-state simulation and local rulesets",
   "scripts": {"test": "node --test tests/*.test.js", "build": "python3 build.py"},
