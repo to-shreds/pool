@@ -19,7 +19,7 @@ with sync_playwright() as p:
  check('New game save is valid',pg.evaluate('CueLab.validateSave(CueLab.snapshot())'))
  for mode in ['8ball','9ball','straight','3ball','onepocket','10ball','banks','rotation','practice','apa8','apa9']:
   pg.select_option('#mode',mode);pane(pg,'shot','aim');pg.evaluate('CueLab.setShot({angle:0,side:0,up:0,elevation:0,power:95})')
-  if mode=='straight':pg.check('#safety')
+  if mode=='straight':pg.locator('#callSafetyButton').click()
   before=saved(pg);pg.locator('#shoot').click();check(mode+' begins a physical shot',pg.evaluate('CueLab.status().shotRunning'))
   pg.locator('#finish').click();after=saved(pg)
   check(mode+' settles into a valid save',pg.evaluate('!CueLab.status().shotRunning&&CueLab.getWorld().atRest()&&CueLab.validateSave(CueLab.snapshot())'))
