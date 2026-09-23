@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#10191d">
 <title>Cue Lab | Pool</title>
-<link rel="stylesheet" href="src/style.css?v=0.3.0">
-<link rel="stylesheet" href="src/features.css?v=0.3.0">
+<link rel="stylesheet" href="src/style.css?v=0.3.1">
+<link rel="stylesheet" href="src/features.css?v=0.3.1">
 </head>
 <body>
 <div class="app">
  <header class="topbar">
-  <div class="brand"><span class="brand-ball">8</span><div><strong>CUE LAB</strong><small>0.3.0 · YOUR TABLE</small></div></div>
+  <div class="brand"><span class="brand-ball">8</span><div><strong>CUE LAB</strong><small>0.3.1 · YOUR TABLE</small></div></div>
   <div class="top-actions"><label class="sr-only" for="mode">Game</label><select id="mode" aria-label="Game"></select><button id="newGame" class="quiet">New game</button><button id="settingsButton" class="quiet" aria-label="Open settings">Settings</button><button id="help" class="icon" aria-label="Help">?</button><button id="full" class="icon" aria-label="Toggle fullscreen">⛶</button></div>
  </header>
  <main>
@@ -23,6 +23,7 @@
     <canvas id="table3d" hidden aria-label="3D view of the same pool table"></canvas><canvas id="mini3d" width="140" height="88" hidden title="Return to overhead view" aria-label="3D table overview"></canvas>
     <canvas id="table" aria-label="Pool table. Tap or drag to aim. Shooting requires the Shoot button." tabindex="0"></canvas>
     <div class="view-tools"><button id="viewButton">View: 2D</button><button id="lookButton" hidden>Look</button><button id="coachButton">Coach</button><button id="computerButton" hidden>Computer</button><button id="nextRackButton" class="primary" hidden>Next rack</button><span id="paceBadge" hidden></span></div>
+    <div id="callHud" class="call-hud" hidden aria-live="polite"><div class="call-copy"><b id="callHudTitle">Call shot</b><span id="callHudText">Tap an object ball, then a pocket.</span></div><div class="call-actions"><button id="callSafetyButton">Safety</button><button id="callBanksButton" hidden>1 bank</button></div></div>
     <div class="table-label" id="tableLabel">9 FT · SIX POCKETS</div><div class="motion-readout" id="motionReadout"></div>
     <div class="choice" id="choice" hidden><b id="choiceText">Take the table?</b><div><button id="take" class="primary">Take table</button><button id="returnShot">Return shot</button></div></div>
    </div>
@@ -44,7 +45,7 @@
      <div class="subpage" data-pane="shot:aim">
       <div class="section-heading"><h2>Aim on the table.</h2><span id="shotMode">BREAK</span></div>
       <div class="fine-aim"><span>FINE AIM</span><button id="aimLeft" aria-label="Aim left 0.1 degrees">↶</button><input id="fineAim" type="range" min="-5" max="5" value="0" step=".025" aria-label="Fine aim adjustment"><button id="aimRight" aria-label="Aim right 0.1 degrees">↷</button></div>
-      <div class="call-controls" id="callControls"><div class="call-row"><label>Ball<select id="callBall"><option value="">Choose</option></select></label><label>Pocket<select id="callPocket"><option value="">Choose</option></select></label><label id="bankCountLabel" hidden>Banks<select id="bankCount"><option>1</option><option>2</option><option>3</option></select></label></div><label class="check"><input type="checkbox" id="safety"> Safety</label></div>
+      <div class="call-controls legacy-call-controls" id="callControls" hidden aria-hidden="true"><div class="call-row"><label>Ball<select id="callBall"><option value="">Choose</option></select></label><label>Pocket<select id="callPocket"><option value="">Choose</option></select></label><label id="bankCountLabel" hidden>Banks<select id="bankCount"><option>1</option><option>2</option><option>3</option></select></label></div><label class="check"><input type="checkbox" id="safety"> Safety</label></div>
       <label class="check push-control" id="pushControl" hidden><input type="checkbox" id="push"> Declare push-out</label>
       <div class="shot-summary"><button id="spinSummary" data-page="spin" data-group="shot">Center ball</button><button id="angleSummary" data-page="angle" data-group="shot">Cue level</button></div>
      </div>
