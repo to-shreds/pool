@@ -1,12 +1,12 @@
-# Cue Lab 0.3.0
+# Cue Lab 0.3.1
 
-Browser pool with optional real 3D, eleven game modes, configurable stroke realism, computer opponents and a shot coach. The original 2D view and precision-placement editor remain available. The site has no runtime backend, telemetry, external assets or CDN dependency.
+Browser pool with optional real 3D, eleven game modes, configurable stroke realism, computer opponents and a shot coach. Version 0.3.1 makes shot declarations table-first and gives the table substantially more screen space while preserving the original 2D view and precision-placement editor. The site has no runtime backend, telemetry, external assets or CDN dependency.
 
 ## Start playing
 
 Open the site entry `index.html` on a static host, or run `python3 build.py` and open the resulting standalone `Cue-Lab.html`. GitHub Pages must be enabled before a public site URL exists; see `HANDOFF.md` for verified hosting status.
 
-The default remains **Arcade, 2D overhead, local two-player**. Drag on the table to aim. Choose Spin or Cue angle when needed, adjust power, then Shoot. Aiming never fires. Power and Shoot remain in the shot dock. Undo restores the complete preceding shot; Replay is view-only. Place cue opens the existing zoomed editor with millimeter nudges and explicit confirmation.
+The default remains **Arcade, 2D overhead, local two-player**. In a Club call-shot mode, make the declaration directly on the table before aiming: tap the object ball, then tap the pocket. Tap a different ball or pocket to change the call. APA 8-ball has no ordinary call-shot declaration; when you are on the 8, tap only the pocket you are marking. Then drag on the table to aim. Choose Spin or Cue angle when needed, adjust power, then Shoot. Aiming never fires. Power and Shoot remain in the shot dock. Undo restores the complete preceding shot; Replay is view-only. Place cue opens the existing zoomed editor with millimeter nudges and explicit confirmation.
 
 Use **Settings** to choose a computer opponent and skill, a 3D shooter/elevated/broadcast camera, Simulation or Custom execution, cue-ball equipment, table dimensions, felt and frame appearance, and coaching preferences. Settings are searchable and paginated across 12 categories. Each of the 68 fields has a short explanation. Cancel discards the draft. Physical/match changes request a restart; appearance and camera changes preserve the live position.
 
@@ -24,7 +24,7 @@ This is bounded, simulator-based coaching. The search and skill profiles need fu
 
 Original modes: Club 8-ball, 9-ball, 14.1, 3-ball, one-pocket, 10-ball, short-rack bank pool, house rotation and free practice. Added modes: APA-derived 8-ball and handicapped APA-derived 9-ball. Match state supports races, point carryover, next racks, a sequential playable lag, timeout counts, statistics, defensive intent, stalemates and contact review. APA 8-ball race targets and APA 9-ball point targets are separately versioned data. APA 9-ball handicap inputs are 1-9, independently of the 2-7 execution profile.
 
-The original Club presets are not overwritten by APA rules. Read `docs/APA.md` and `docs/RULES.md` for supported rules and remaining referee/edge-case limitations. No APA endorsement, official handicap calculation, online multiplayer or team/roster administration is implied.
+The original Club presets are not overwritten by APA rules. Visible ball/pocket dropdowns are no longer part of normal play; the hidden declaration fields remain only for save compatibility and rules plumbing. Read `docs/APA.md` and `docs/RULES.md` for supported rules and remaining referee/edge-case limitations. No APA endorsement, official handicap calculation, online multiplayer or team/roster administration is implied.
 
 ## Saves and drills
 
@@ -44,6 +44,6 @@ node verification/stress-v0.3.js
 
 `build.py` generates `src/worker-bundle.js` from the physics/rules/execution/coach modules, then the self-contained HTML. Never hand-edit the generated worker bundle. The hosted entry references the same source files and bundled worker.
 
-Browser harnesses require Python Playwright and Chromium. Set `CHROMIUM` where supported, or adjust the executable path. Run `verification/browser-v0.3.py`, `extra-v0.3.py`, `layout-v0.3.py`, and `modular-v0.3.py`. Real WebGL checks use `xvfb-run -a python3 verification/graphics-v0.3.py` and headed Chromium with ANGLE SwiftShader. They are not physical Android GPU tests.
+Browser harnesses require Python Playwright and Chromium. Set `CHROMIUM` where supported, or adjust the executable path. Run `verification/browser-v0.3.py`, `extra-v0.3.py`, `layout-v0.3.py`, `call-ui-v0.3.1.py`, and `modular-v0.3.py`. Real WebGL checks use `xvfb-run -a python3 verification/graphics-v0.3.py` and headed Chromium with ANGLE SwiftShader. They are not physical Android GPU tests.
 
-See `verification/REPORT-v0.3.md` for exact results and test-environment boundaries. `docs/SETTINGS.md`, `EXECUTION.md`, `AI-COACH.md`, `PHYSICS.md`, and `APA.md` describe the actual models. The full approved `ROADMAP-0.3.md` remains the longer-term scope; `RELEASE-0.3.md` distinguishes implemented features from calibration and unfinished extensions.
+See `verification/REPORT-v0.3.md` for the underlying 0.3 simulation benchmark and `verification/REPORT-v0.3.1.md` for the direct-call/table-layout regression pass. `docs/SETTINGS.md`, `EXECUTION.md`, `AI-COACH.md`, `PHYSICS.md`, and `APA.md` describe the actual models. The full approved `ROADMAP-0.3.md` remains the longer-term scope; `RELEASE-0.3.md` distinguishes implemented features from calibration and unfinished extensions.
